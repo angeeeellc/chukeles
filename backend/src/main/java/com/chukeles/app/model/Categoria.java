@@ -1,6 +1,6 @@
 package com.chukeles.app.model;
 
-public enum Category {
+public enum Categoria {
     VETERINARIO,
     PELUQUERIA,
     PET_FRIENDLY,

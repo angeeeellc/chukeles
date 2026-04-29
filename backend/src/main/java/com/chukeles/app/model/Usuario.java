@@ -6,12 +6,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Entity
-@Table(name = "users")
+@Table(name = "usuarios")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,15 +23,15 @@ public class User {
     private String email;
 
     @NotBlank
-    private String password;
+    private String contrasena;
 
     @NotBlank
-    private String name;
+    private String nombre;
 
-    private String phone;
+    private String telefono;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Rol rol;
 
-    private String photoUrl;
+    private String fotoUrl;
 }

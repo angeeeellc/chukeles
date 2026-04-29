@@ -2,8 +2,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect } from 'react';
-import type { Place } from '../services/placeService';
-import { usePlaceStore } from '../store/placeStore';
+import type { Lugar } from '../services/lugarService';
+import { useLugarStore } from '../store/lugarStore';
 
 // Fix for default marker icon issues in React-Leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -18,7 +18,7 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Helper component to center map when selectedPlace changes
+// Helper component to center map when lugarSeleccionado changes
 const ChangeView = ({ center, zoom }: { center: [number, number], zoom: number }) => {
   const map = useMap();
   useEffect(() => {
@@ -28,17 +28,17 @@ const ChangeView = ({ center, zoom }: { center: [number, number], zoom: number }
 };
 
 interface MapComponentProps {
-  places: Place[];
+  lugares: Lugar[];
 }
 
-const MapComponent = ({ places }: MapComponentProps) => {
-  const { selectedPlace, setSelectedPlace } = usePlaceStore();
+const MapComponent = ({ lugares }: MapComponentProps) => {
+  const { lugarSeleccionado, setLugarSeleccionado } = useLugarStore();
 
   const defaultCenter: [number, number] = [43.3623, -8.4115];
   const defaultZoom = 14;
 
-  const currentCenter: [number, number] = selectedPlace 
-    ? [selectedPlace.lat, selectedPlace.lng] 
+  const currentCenter: [number, number] = lugarSeleccionado 
+    ? [lugarSeleccionado.lat, lugarSeleccionado.lng] 
     : defaultCenter;
 
   return (
@@ -54,26 +54,26 @@ const MapComponent = ({ places }: MapComponentProps) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        <ChangeView center={currentCenter} zoom={selectedPlace ? 16 : defaultZoom} />
+        <ChangeView center={currentCenter} zoom={lugarSeleccionado ? 16 : defaultZoom} />
 
-        {places.map((place) => (
+        {lugares.map((lugar) => (
           <Marker 
-            key={place.id} 
-            position={[place.lat, place.lng]}
+            key={lugar.id} 
+            position={[lugar.lat, lugar.lng]}
             eventHandlers={{
               click: () => {
-                setSelectedPlace(place);
+                setLugarSeleccionado(lugar);
               },
             }}
           >
             <Popup>
               <div className="p-1 max-w-[150px]">
-                <h4 className="font-bold text-forest-green m-0 text-sm">{place.name}</h4>
-                <p className="text-[10px] text-gray-500 my-1">{place.category}</p>
-                {place.photoUrl && (
-                  <img src={place.photoUrl} alt={place.name} className="w-full h-16 object-cover rounded mb-1" />
+                <h4 className="font-bold text-forest-green m-0 text-sm">{lugar.nombre}</h4>
+                <p className="text-[10px] text-gray-500 my-1">{lugar.categoria}</p>
+                {lugar.fotoUrl && (
+                  <img src={lugar.fotoUrl} alt={lugar.nombre} className="w-full h-16 object-cover rounded mb-1" />
                 )}
-                <p className="text-[9px] text-gray-600 line-clamp-2 leading-tight">{place.description}</p>
+                <p className="text-[9px] text-gray-600 line-clamp-2 leading-tight">{lugar.descripcion}</p>
               </div>
             </Popup>
           </Marker>

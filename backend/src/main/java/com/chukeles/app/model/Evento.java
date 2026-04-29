@@ -8,38 +8,38 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "events")
+@Table(name = "eventos")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Event {
+public class Evento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank
-    private String title;
+    private String titulo;
 
     @NotNull
-    private LocalDate date;
+    private LocalDate fecha;
 
     @NotNull
-    private LocalTime time;
+    private LocalTime hora;
 
     @NotBlank
-    private String location;
+    private String ubicacion;
 
     private Double lat;
     private Double lng;
 
-    private Integer maxParticipants;
+    private Integer maxParticipantes;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String descripcion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Usuario usuario;
 }

@@ -6,26 +6,26 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
-@Table(name = "places")
+@Table(name = "lugares")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Place {
+public class Lugar {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank
-    private String name;
+    private String nombre;
 
     @Enumerated(EnumType.STRING)
     @NotNull
-    private Category category;
+    private Categoria categoria;
 
     @NotBlank
-    private String address;
+    private String direccion;
 
     @NotNull
     private Double lat;
@@ -34,12 +34,12 @@ public class Place {
     private Double lng;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String descripcion;
 
-    private String phone;
-    private String website;
-    private String photoUrl;
+    private String telefono;
+    private String sitioWeb;
+    private String fotoUrl;
 
     @Builder.Default
-    private Boolean approved = false;
+    private Boolean aprobado = false;
 }

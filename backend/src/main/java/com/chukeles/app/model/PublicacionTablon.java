@@ -6,34 +6,34 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "bulletin_posts")
+@Table(name = "publicaciones_tablon")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BulletinPost {
+public class PublicacionTablon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank
-    private String title;
+    private String titulo;
 
     @NotBlank
     @Column(columnDefinition = "TEXT")
-    private String content;
+    private String contenido;
 
-    private String contactInfo;
+    private String infoContacto;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Usuario usuario;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime creadoEn;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        creadoEn = LocalDateTime.now();
     }
 }

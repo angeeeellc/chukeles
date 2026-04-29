@@ -7,43 +7,43 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "market_listings")
+@Table(name = "anuncios_mercado")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MarketListing {
+public class AnuncioMercado {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank
-    private String title;
+    private String titulo;
 
     @NotNull
-    private Double price;
+    private Double precio;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String descripcion;
 
-    private String photoUrl;
+    private String fotoUrl;
 
     @Enumerated(EnumType.STRING)
     @NotNull
-    private MarketCategory category;
+    private CategoriaMercado categoria;
 
     @Builder.Default
-    private String status = "AVAILABLE"; // AVAILABLE, SOLD
+    private String estado = "DISPONIBLE"; // DISPONIBLE, VENDIDO
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Usuario usuario;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime creadoEn;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        creadoEn = LocalDateTime.now();
     }
 }
