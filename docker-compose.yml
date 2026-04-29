@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: chukeles-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: chukeles
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_USER: ${DB_USER:-chukeles_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-chukeles_pass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./data/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: chukeles-backend
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/chukeles
+      - DB_USER=${DB_USER:-chukeles_user}
+      - DB_PASSWORD=${DB_PASSWORD:-chukeles_pass}
+
+  frontend:
+    build: ./frontend
+    container_name: chukeles-frontend
+    restart: on-failure
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_URL=http://localhost:8080
+
+volumes:
+  mysql_data:
