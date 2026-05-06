@@ -32,6 +32,19 @@ interface MapComponentProps {
 }
 
 const MapComponent = ({ lugares }: MapComponentProps) => {
+  const traducirCategoria = (cat: string) => {
+    const map: Record<string, string> = {
+      'VET': 'VETERINARIO',
+      'PARK': 'PARQUE',
+      'GROOMING': 'PELUQUERIA',
+      'STORE': 'TIENDA',
+      'HOTEL': 'HOTEL',
+      'TRAINING': 'ADIESTRAMIENTO',
+      'OTHER': 'OTRO'
+    };
+    return map[cat.toUpperCase()] || cat;
+  };
+
   const { lugarSeleccionado, setLugarSeleccionado } = useLugarStore();
 
   const defaultCenter: [number, number] = [43.3623, -8.4115];
@@ -69,7 +82,7 @@ const MapComponent = ({ lugares }: MapComponentProps) => {
             <Popup>
               <div className="p-1 max-w-[150px]">
                 <h4 className="font-bold text-forest-green m-0 text-sm">{lugar.nombre}</h4>
-                <p className="text-[10px] text-gray-500 my-1">{lugar.categoria}</p>
+                <p className="text-[10px] text-gray-500 my-1">{traducirCategoria(lugar.categoria)}</p>
                 {lugar.fotoUrl && (
                   <img src={lugar.fotoUrl} alt={lugar.nombre} className="w-full h-16 object-cover rounded mb-1" />
                 )}

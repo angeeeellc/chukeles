@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface AnuncioMercadoRepository extends JpaRepository<AnuncioMercado, Long> {
-    List<AnuncioMercado> findByCategory(CategoriaMercado categoria);
-    List<AnuncioMercado> findByStatus(String estado);
-    List<AnuncioMercado> findByCategoryAndStatus(CategoriaMercado categoria, String estado);
+    List<AnuncioMercado> findByCategoria(CategoriaMercado categoria);
+    List<AnuncioMercado> findByEstado(String estado);
+    List<AnuncioMercado> findByCategoriaAndEstado(CategoriaMercado categoria, String estado);
 }

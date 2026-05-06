@@ -3,9 +3,9 @@ spring:
     nombre: chukeles-backend
   datasource:
     url: jdbc:h2:mem:chukeles;DB_CLOSE_DELAY=-1
-    driver-class-nombre: org.h2.Driver
+    driver-class-name: org.h2.Driver
     username: sa
-    contrasena: 
+    password: 
   h2:
     console:
       enabled: true
@@ -38,8 +38,8 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${DB_USER}
-    contrasena: ${DB_PASSWORD}
-    driver-class-nombre: com.mysql.cj.jdbc.Driver
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
   sql:
     init:
       mode: always

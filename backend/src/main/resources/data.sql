@@ -1,5 +1,5 @@
 -- Seed data for Chukeles - A Coruña
-INSERT INTO lugares (nombre, categoria, direccion, lat, lng, descripcion, telefono, sitioWeb, photo_url, aprobado) VALUES
+INSERT INTO lugares (nombre, categoria, direccion, lat, lng, descripcion, telefono, sitio_web, foto_url, aprobado) VALUES
 ('Parque de Santa Margarita', 'PARQUE', 'Rúa de Santa Margarita, s/n, 15005 A Coruña', 43.3619, -8.4111, 'Extenso parque ideal para pasear con perros, con amplias zonas verdes y mucha sombra.', '981 18 42 00', '', 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Parque_de_Santa_Margarita_A_Coru%C3%B1a.jpg', true),
 ('Clínica Veterinaria Elviña', 'VETERINARIO', 'Av. de Glasgow, 11, 15008 A Coruña', 43.3444, -8.4061, 'Servicio de urgencias y medicina general para mascotas.', '981 24 56 78', 'https://veterinariaelvina.com', 'https://www.publicdomainpictures.net/pictures/330000/velka/vet-office-veterinary-medicine.jpg', true),
 ('Playa de Riazor (Zona Canina)', 'PARQUE', 'Paseo Marítimo, 15004 A Coruña', 43.3689, -8.4109, 'Habilitada para perros durante la temporada permitida (consultar normativa municipal).', '', '', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Praia_de_Riazor_-_A_Coru%C3%B1a_-_Galicia_01.jpg/800px-Praia_de_Riazor_-_A_Coru%C3%B1a_-_Galicia_01.jpg', true),

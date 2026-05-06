@@ -4,6 +4,19 @@ import type { Lugar } from '../services/lugarService'
 import MapComponent from '../components/MapComponent'
 
 const Home = () => {
+  const traducirCategoria = (cat: string) => {
+    const map: Record<string, string> = {
+      'VET': 'VETERINARIO',
+      'PARK': 'PARQUE',
+      'GROOMING': 'PELUQUERIA',
+      'STORE': 'TIENDA',
+      'HOTEL': 'HOTEL',
+      'TRAINING': 'ADIESTRAMIENTO',
+      'OTHER': 'OTRO'
+    };
+    return map[cat.toUpperCase()] || cat;
+  };
+
   const { lugares, cargando, error, cargarLugares, lugarSeleccionado, setLugarSeleccionado } = useLugarStore()
 
   useEffect(() => {
@@ -47,12 +60,14 @@ const Home = () => {
                     {lugar.fotoUrl ? (
                       <img src={lugar.fotoUrl} alt={lugar.nombre} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">🐶</div>
+                      <div className="w-full h-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                      </div>
                     )}
                   </div>
                   <div>
                     <h3 className="font-bold text-sm text-gray-800">{lugar.nombre}</h3>
-                    <p className="text-[10px] text-ocean-blue font-semibold uppercase">{lugar.categoria}</p>
+                    <p className="text-[10px] text-ocean-blue font-semibold uppercase">{traducirCategoria(lugar.categoria)}</p>
                     <p className="text-[10px] text-gray-500 line-clamp-1">📍 {lugar.direccion}</p>
                   </div>
                 </div>

@@ -9,10 +9,12 @@ function App() {
         <nav className="bg-forest-green h-16 flex items-center shadow-md z-10 w-full px-8">
           <div className="w-full flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">🐶</span>
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
               <div>
                 <h1 className="text-xl font-bold text-white leading-none">Chukeles</h1>
-                <p className="text-[10px] text-green-100 font-medium tracking-tight">A Coruña con tu perro</p>
+                <p className="text-[10px] text-green-100 font-medium tracking-tight">A Coruña con tu mascota</p>
               </div>
             </div>
             <div className="hidden md:flex gap-6 text-sm font-medium text-white/90">
@@ -21,7 +23,7 @@ function App() {
               <a href="#" className="hover:text-white transition-colors">Tablón</a>
               <a href="#" className="hover:text-white transition-colors">Market</a>
             </div>
-            <button className="bg-ocean-blue text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg hover:bg-blue-800 transition-all">
+            <button className="bg-white text-black px-5 py-1.5 rounded-full text-sm font-bold shadow-md hover:bg-gray-100 transition-all">
               Entrar
             </button>
           </div>
