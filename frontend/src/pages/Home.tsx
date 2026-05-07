@@ -49,26 +49,30 @@ const Home = () => {
               <div 
                 key={lugar.id} 
                 onClick={() => setLugarSeleccionado(lugar)}
-                className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                className={`flex flex-col rounded-xl border cursor-pointer transition-all overflow-hidden hover:shadow-lg hover:border-forest-green/30 hover:bg-gray-50/50 ${
                   lugarSeleccionado?.id === lugar.id 
-                    ? 'bg-green-50 border-forest-green shadow-sm ring-1 ring-forest-green' 
-                    : 'bg-white border-gray-100 hover:border-gray-200 shadow-sm'
+                    ? 'bg-green-50 border-forest-green shadow-md ring-1 ring-forest-green scale-[1.02]' 
+                    : 'bg-white border-gray-100 shadow-sm'
                 }`}
               >
-                <div className="flex gap-3">
-                  <div className="w-16 h-16 rounded-lg bg-gray-100 shrink-0 overflow-hidden">
-                    {lugar.fotoUrl ? (
-                      <img src={lugar.fotoUrl} alt={lugar.nombre} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                      </div>
-                    )}
+                {lugar.fotoUrl && (
+                  <div className="w-full h-32 overflow-hidden">
+                    <img src={lugar.fotoUrl} alt={lugar.nombre} className="w-full h-full object-cover transition-transform hover:scale-110" />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-gray-800">{lugar.nombre}</h3>
-                    <p className="text-[10px] text-ocean-blue font-semibold uppercase">{traducirCategoria(lugar.categoria)}</p>
-                    <p className="text-[10px] text-gray-500 line-clamp-1">📍 {lugar.direccion}</p>
+                )}
+                <div className="p-3">
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="font-bold text-sm text-gray-800 leading-tight flex-1">{lugar.nombre}</h3>
+                    <span className="text-[9px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full ml-2 shrink-0">
+                      {traducirCategoria(lugar.categoria)}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-gray-500 line-clamp-2 mb-2">
+                    {lugar.descripcion}
+                  </p>
+                  <div className="flex items-center text-[10px] text-gray-400">
+                    <span className="mr-1">📍</span>
+                    <span className="truncate">{lugar.direccion}</span>
                   </div>
                 </div>
               </div>

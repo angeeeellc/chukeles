@@ -17,11 +17,11 @@ function App() {
                 <p className="text-[10px] text-green-100 font-medium tracking-tight">A Coruña con tu mascota</p>
               </div>
             </div>
-            <div className="hidden md:flex gap-6 text-sm font-medium text-white/90">
-              <a href="#" className="hover:text-white transition-colors border-b-2 border-white pb-0.5">Mapa</a>
-              <a href="#" className="hover:text-white transition-colors">Eventos</a>
-              <a href="#" className="hover:text-white transition-colors">Tablón</a>
-              <a href="#" className="hover:text-white transition-colors">Market</a>
+            <div className="hidden md:flex gap-1 text-sm font-medium">
+              <a href="#" className="px-3 py-1.5 text-white bg-white/20 rounded-lg transition-all shadow-inner">Mapa</a>
+              <a href="#" className="px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all">Eventos</a>
+              <a href="#" className="px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all">Tablón</a>
+              <a href="#" className="px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all">Tienda</a>
             </div>
             <button className="bg-white text-black px-5 py-1.5 rounded-full text-sm font-bold shadow-md hover:bg-gray-100 transition-all">
               Entrar
