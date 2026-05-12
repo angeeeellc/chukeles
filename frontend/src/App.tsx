@@ -4,7 +4,7 @@ import Home from './pages/Home'
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-white flex flex-col w-full min-w-full overflow-x-hidden">
+      <div className="h-screen w-screen bg-white flex flex-col overflow-hidden">
         {/* Navbar */}
         <nav className="bg-forest-green h-16 flex items-center shadow-md z-50 w-full shrink-0">
           <div className="w-full px-4 md:px-8 flex justify-between items-center">
@@ -37,7 +37,7 @@ function App() {
         </nav>
 
         {/* Main Content Area */}
-        <main className="flex-1 relative">
+        <main className="flex-1 flex flex-col overflow-hidden w-full relative">
           <Routes>
             <Route path="/" element={<Home />} />
           </Routes>

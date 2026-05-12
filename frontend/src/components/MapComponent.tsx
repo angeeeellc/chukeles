@@ -24,10 +24,11 @@ const MapController = ({ center, zoom }: { center: [number, number]; zoom: numbe
 
   useEffect(() => {
     // Forzar recálculo del tamaño del contenedor (crítico en Docker/Nginx)
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       map.invalidateSize();
       map.setView(center, zoom);
-    }, 100);
+    }, 150);
+    return () => clearTimeout(timer);
   }, [center, zoom, map]);
 
   return null;
@@ -69,16 +70,16 @@ const MapComponent = ({ lugares }: MapComponentProps) => {
         position: 'absolute',
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0,
-        minHeight: '400px',
+        width: '100%',
+        height: '100%',
+        zIndex: 1,
       }}
     >
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
         scrollWheelZoom={true}
-        style={{ height: '100%', width: '100%', minHeight: '400px' }}
+        style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

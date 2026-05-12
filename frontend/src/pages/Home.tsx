@@ -24,8 +24,8 @@ const Home = () => {
   }, [cargarLugares])
 
   return (
-    // Ocupa todo el espacio disponible bajo el header de la app, sin scroll exterior
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'hidden' }}>
+    // Contenedor estricto que llena el <main> al 100% impidiendo scroll exterior
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%', overflow: 'hidden' }}>
 
       {/* Barra de búsqueda / título */}
       <div style={{
@@ -49,10 +49,10 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Contenido principal: sidebar + mapa — NUNCA hace scroll vertical en este nivel */}
-      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden', minHeight: 0 }}>
+      {/* Contenido principal: sidebar + mapa — Ocupa el 100% del alto restante, sin scroll aquí */}
+      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, width: '100%', overflow: 'hidden' }}>
 
-        {/* Sidebar de lugares — SOLO AQUÍ hay scroll */}
+        {/* Sidebar de lugares — SOLO AQUÍ hay scroll vertical, ocultamos el horizontal */}
         <div style={{
           width: '380px',
           minWidth: '320px',
@@ -62,6 +62,8 @@ const Home = () => {
           background: '#f9fafb',
           borderRight: '1px solid #e5e7eb',
           flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
         }}>
           {cargando && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '12px' }}>
@@ -98,7 +100,6 @@ const Home = () => {
                       alt={lugar.nombre}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
                       onError={(e) => {
-                        // Fallback a imagen genérica si Unsplash no carga
                         (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=800';
                         (e.target as HTMLImageElement).onerror = null;
                       }}
@@ -132,8 +133,8 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Mapa — SIEMPRE visible, ocupa el espacio restante */}
-        <div style={{ flex: 1, height: '100%', position: 'relative', minWidth: 0 }}>
+        {/* Mapa — SIEMPRE visible, ocupa de forma implacable todo el espacio restante a la derecha */}
+        <div style={{ flex: 1, height: '100%', position: 'relative', overflow: 'hidden' }}>
           <MapComponent lugares={lugares} />
         </div>
 
