@@ -1,73 +1,109 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useLugarStore } from '../store/lugarStore'
 import type { Lugar } from '../services/lugarService'
 import MapComponent from '../components/MapComponent'
 
+// Categorías disponibles con etiqueta en español y emoji
+const CATEGORIAS = [
+  { valor: 'TODOS',       etiqueta: 'Todos',          emoji: '🐾' },
+  { valor: 'PARQUE',      etiqueta: 'Parques',         emoji: '🌳' },
+  { valor: 'VETERINARIO', etiqueta: 'Veterinarios',    emoji: '🏥' },
+  { valor: 'PELUQUERIA',  etiqueta: 'Peluquerías',     emoji: '✂️' },
+  { valor: 'TIENDA',      etiqueta: 'Tiendas',         emoji: '🛍️' },
+  { valor: 'HOTEL',       etiqueta: 'Hoteles',         emoji: '🏨' },
+  { valor: 'ADIESTRAMIENTO', etiqueta: 'Adiestramiento', emoji: '🎓' },
+  { valor: 'PET_FRIENDLY', etiqueta: 'Pet Friendly',  emoji: '☕' },
+]
+
+const VERDE = '#2d6a4f'
+
 const Home = () => {
+  const [categoriaActiva, setCategoriaActiva] = useState('TODOS')
+
   const traducirCategoria = (cat: string) => {
     const map: Record<string, string> = {
-      'VET': 'VETERINARIO',
-      'PARK': 'PARQUE',
-      'GROOMING': 'PELUQUERIA',
-      'STORE': 'TIENDA',
-      'HOTEL': 'HOTEL',
-      'TRAINING': 'ADIESTRAMIENTO',
-      'OTHER': 'OTRO'
-    };
-    return map[cat.toUpperCase()] || cat;
-  };
+      'VET': 'VETERINARIO', 'PARK': 'PARQUE', 'GROOMING': 'PELUQUERIA',
+      'STORE': 'TIENDA', 'HOTEL': 'HOTEL', 'TRAINING': 'ADIESTRAMIENTO', 'OTHER': 'OTRO'
+    }
+    return map[cat.toUpperCase()] || cat
+  }
 
   const { lugares, cargando, error, cargarLugares, lugarSeleccionado, setLugarSeleccionado } = useLugarStore()
 
-  useEffect(() => {
-    cargarLugares()
-  }, [cargarLugares])
+  useEffect(() => { cargarLugares() }, [cargarLugares])
+
+  // Filtrado reactivo por categoría
+  const lugaresFiltrados = useMemo(() => {
+    return lugares.filter((lugar: Lugar) => {
+      return categoriaActiva === 'TODOS' || lugar.categoria.toUpperCase() === categoriaActiva
+    })
+  }, [lugares, categoriaActiva])
 
   return (
-    // Contenedor estricto que llena el <main> al 100% impidiendo scroll exterior
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%', overflow: 'hidden' }}>
 
-      {/* Barra de búsqueda / título */}
+      {/* Header superior */}
       <div style={{
-        background: '#fff',
-        borderBottom: '1px solid #e5e7eb',
-        padding: '12px 24px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexShrink: 0,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-        zIndex: 10,
+        background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '12px 24px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        flexShrink: 0, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', zIndex: 10,
       }}>
         <div>
           <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#1f2937', margin: 0 }}>Explorar A Coruña</h2>
-          <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0' }}>{lugares.length} lugares para tu mascota</p>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button style={{ background: '#f3f4f6', border: 'none', padding: '6px 16px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, color: '#374151', cursor: 'pointer' }}>Filtros</button>
-          <button style={{ background: 'rgba(45,106,79,0.1)', border: 'none', padding: '6px 16px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, color: '#2d6a4f', cursor: 'pointer' }}>Categorías</button>
+          <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0' }}>
+            {lugaresFiltrados.length} {lugaresFiltrados.length === 1 ? 'lugar' : 'lugares'} para tu mascota
+          </p>
         </div>
       </div>
 
-      {/* Contenido principal: sidebar + mapa — Ocupa el 100% del alto restante, sin scroll aquí */}
+      {/* Contenido principal */}
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1, width: '100%', overflow: 'hidden' }}>
 
-        {/* Sidebar de lugares — SOLO AQUÍ hay scroll vertical, ocultamos el horizontal */}
+        {/* ── Sidebar izquierdo ── */}
         <div style={{
-          width: '380px',
-          minWidth: '320px',
-          height: '100%',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          background: '#f9fafb',
-          borderRight: '1px solid #e5e7eb',
-          flexShrink: 0,
-          display: 'flex',
-          flexDirection: 'column',
+          width: '380px', minWidth: '320px', height: '100%',
+          overflowY: 'auto', overflowX: 'hidden',
+          background: '#f9fafb', borderRight: '1px solid #e5e7eb',
+          flexShrink: 0, display: 'flex', flexDirection: 'column',
         }}>
+
+          {/* Desplegable de categoría */}
+          <div style={{ padding: '12px 16px 10px', background: '#f9fafb', flexShrink: 0 }}>
+            <div style={{ position: 'relative' }}>
+              <select
+                value={categoriaActiva}
+                onChange={(e) => setCategoriaActiva(e.target.value)}
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  padding: '10px 36px 10px 14px',
+                  border: '1.5px solid #e5e7eb', borderRadius: '12px',
+                  fontSize: '13px', fontWeight: 600, color: '#1f2937',
+                  background: '#fff', cursor: 'pointer', outline: 'none',
+                  appearance: 'none', WebkitAppearance: 'none',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                  transition: 'border-color 0.2s',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = VERDE)}
+                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+              >
+                {CATEGORIAS.map(({ valor, etiqueta, emoji }) => (
+                  <option key={valor} value={valor}>{emoji} {etiqueta}</option>
+                ))}
+              </select>
+              {/* Flecha decorativa */}
+              <svg
+                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: '#6b7280', pointerEvents: 'none' }}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Lista de resultados */}
           {cargando && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '12px' }}>
-              <div style={{ width: '32px', height: '32px', border: '4px solid rgba(45,106,79,0.2)', borderTopColor: '#2d6a4f', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              <div style={{ width: '32px', height: '32px', border: '4px solid rgba(45,106,79,0.2)', borderTopColor: VERDE, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
               <p style={{ fontSize: '13px', color: '#9ca3af' }}>Buscando lugares...</p>
             </div>
           )}
@@ -77,17 +113,22 @@ const Home = () => {
             </div>
           )}
 
-          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {lugares.map((lugar: Lugar) => (
+          {!cargando && lugaresFiltrados.length === 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '160px', gap: '8px' }}>
+              <span style={{ fontSize: '32px' }}>🔍</span>
+              <p style={{ fontSize: '13px', color: '#9ca3af', fontWeight: 500 }}>Sin resultados para esa búsqueda</p>
+            </div>
+          )}
+
+          <div style={{ padding: '8px 16px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {lugaresFiltrados.map((lugar: Lugar) => (
               <div
                 key={lugar.id}
                 onClick={() => setLugarSeleccionado(lugar)}
                 style={{
                   background: '#fff',
-                  border: lugarSeleccionado?.id === lugar.id ? '2px solid #2d6a4f' : '1px solid #f3f4f6',
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
+                  border: lugarSeleccionado?.id === lugar.id ? `2px solid ${VERDE}` : '1px solid #f3f4f6',
+                  borderRadius: '16px', overflow: 'hidden', cursor: 'pointer',
                   boxShadow: lugarSeleccionado?.id === lugar.id ? '0 8px 24px rgba(45,106,79,0.15)' : '0 1px 4px rgba(0,0,0,0.06)',
                   transition: 'all 0.25s ease',
                   transform: lugarSeleccionado?.id === lugar.id ? 'scale(1.01)' : 'scale(1)',
@@ -96,16 +137,15 @@ const Home = () => {
                 {lugar.fotoUrl && (
                   <div style={{ width: '100%', height: '180px', overflow: 'hidden', position: 'relative', background: '#e5e7eb' }}>
                     <img
-                      src={lugar.fotoUrl}
-                      alt={lugar.nombre}
+                      src={lugar.fotoUrl} alt={lugar.nombre}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=800';
-                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=800'
+                        ;(e.target as HTMLImageElement).onerror = null
                       }}
                     />
                     <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
-                      <span style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)', color: '#2d6a4f', fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+                      <span style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)', color: VERDE, fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
                         {traducirCategoria(lugar.categoria)}
                       </span>
                     </div>
@@ -123,7 +163,7 @@ const Home = () => {
                       </svg>
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lugar.direccion}</span>
                     </div>
-                    <button style={{ fontSize: '10px', fontWeight: 700, color: '#2d6a4f', background: 'none', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <button style={{ fontSize: '10px', fontWeight: 700, color: VERDE, background: 'none', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Ver más
                     </button>
                   </div>
@@ -133,9 +173,9 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Mapa — SIEMPRE visible, ocupa de forma implacable todo el espacio restante a la derecha */}
+        {/* Mapa */}
         <div style={{ flex: 1, height: '100%', position: 'relative', overflow: 'hidden' }}>
-          <MapComponent lugares={lugares} />
+          <MapComponent lugares={lugaresFiltrados} />
         </div>
 
       </div>
