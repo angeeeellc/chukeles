@@ -5,7 +5,7 @@ spring:
     url: jdbc:h2:mem:chukeles;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
     username: sa
-    password: 
+    password:
   h2:
     console:
       enabled: true
@@ -30,6 +30,12 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
+# ── Configuración JWT ──────────────────────────────────────────────────────────
+chukeles:
+  jwt:
+    secreto: chukeles-secreto-super-seguro-para-jwt-minimo-64-caracteres-requeridos-hmac
+    expiracion-ms: 86400000  # 24 horas en milisegundos
+
 ---
 spring:
   config:
@@ -49,3 +55,9 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+
+# ── JWT en producción (sobreescribe el valor por defecto) ─────────────────────
+chukeles:
+  jwt:
+    secreto: ${JWT_SECRETO:chukeles-secreto-super-seguro-para-jwt-minimo-64-caracteres-requeridos-hmac}
+    expiracion-ms: ${JWT_EXPIRACION_MS:86400000}

@@ -18,6 +18,7 @@ public class Lugar {
     private Long id;
 
     @NotBlank
+    @Column(unique = true)
     private String nombre;
 
     @Enumerated(EnumType.STRING)

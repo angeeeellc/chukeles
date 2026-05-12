@@ -1,11 +1,11 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Lugar } from '../services/lugarService';
 import { useLugarStore } from '../store/lugarStore';
 
-// Fix for default marker icon issues in React-Leaflet
+// Fix para los iconos de los marcadores en React-Leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
@@ -18,12 +18,18 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Helper component to center map when lugarSeleccionado changes
-const ChangeView = ({ center, zoom }: { center: [number, number], zoom: number }) => {
+// Componente interno que fuerza invalidateSize y centra el mapa
+const MapController = ({ center, zoom }: { center: [number, number]; zoom: number }) => {
   const map = useMap();
+
   useEffect(() => {
-    map.setView(center, zoom);
+    // Forzar recálculo del tamaño del contenedor (crítico en Docker/Nginx)
+    setTimeout(() => {
+      map.invalidateSize();
+      map.setView(center, zoom);
+    }, 100);
   }, [center, zoom, map]);
+
   return null;
 };
 
@@ -32,6 +38,8 @@ interface MapComponentProps {
 }
 
 const MapComponent = ({ lugares }: MapComponentProps) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
   const traducirCategoria = (cat: string) => {
     const map: Record<string, string> = {
       'VET': 'VETERINARIO',
@@ -50,28 +58,38 @@ const MapComponent = ({ lugares }: MapComponentProps) => {
   const defaultCenter: [number, number] = [43.3623, -8.4115];
   const defaultZoom = 14;
 
-  const currentCenter: [number, number] = lugarSeleccionado 
-    ? [lugarSeleccionado.lat, lugarSeleccionado.lng] 
+  const currentCenter: [number, number] = lugarSeleccionado
+    ? [lugarSeleccionado.lat, lugarSeleccionado.lng]
     : defaultCenter;
 
   return (
-    <div className="h-full w-full">
-      <MapContainer 
-        center={defaultCenter} 
-        zoom={defaultZoom} 
+    <div
+      ref={wrapperRef}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        minHeight: '400px',
+      }}
+    >
+      <MapContainer
+        center={defaultCenter}
+        zoom={defaultZoom}
         scrollWheelZoom={true}
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', minHeight: '400px' }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        
-        <ChangeView center={currentCenter} zoom={lugarSeleccionado ? 16 : defaultZoom} />
+
+        <MapController center={currentCenter} zoom={lugarSeleccionado ? 16 : defaultZoom} />
 
         {lugares.map((lugar) => (
-          <Marker 
-            key={lugar.id} 
+          <Marker
+            key={lugar.id}
             position={[lugar.lat, lugar.lng]}
             eventHandlers={{
               click: () => {
@@ -80,13 +98,13 @@ const MapComponent = ({ lugares }: MapComponentProps) => {
             }}
           >
             <Popup>
-              <div className="p-1 max-w-[150px]">
-                <h4 className="font-bold text-forest-green m-0 text-sm">{lugar.nombre}</h4>
-                <p className="text-[10px] text-gray-500 my-1">{traducirCategoria(lugar.categoria)}</p>
+              <div style={{ padding: '4px', maxWidth: '150px' }}>
+                <h4 style={{ fontWeight: 'bold', color: '#2d6a4f', margin: 0, fontSize: '13px' }}>{lugar.nombre}</h4>
+                <p style={{ fontSize: '10px', color: '#6b7280', margin: '4px 0' }}>{traducirCategoria(lugar.categoria)}</p>
                 {lugar.fotoUrl && (
-                  <img src={lugar.fotoUrl} alt={lugar.nombre} className="w-full h-16 object-cover rounded mb-1" />
+                  <img src={lugar.fotoUrl} alt={lugar.nombre} style={{ width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', marginBottom: '4px' }} />
                 )}
-                <p className="text-[9px] text-gray-600 line-clamp-2 leading-tight">{lugar.descripcion}</p>
+                <p style={{ fontSize: '9px', color: '#4b5563', lineHeight: 1.4 }}>{lugar.descripcion}</p>
               </div>
             </Popup>
           </Marker>

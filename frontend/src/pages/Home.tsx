@@ -24,55 +24,107 @@ const Home = () => {
   }, [cargarLugares])
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] w-full overflow-hidden">
-      {/* Search Header / Title */}
-      <div className="bg-white p-4 border-b flex justify-between items-center px-8 shrink-0">
+    // Ocupa todo el espacio disponible bajo el header de la app, sin scroll exterior
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'hidden' }}>
+
+      {/* Barra de búsqueda / título */}
+      <div style={{
+        background: '#fff',
+        borderBottom: '1px solid #e5e7eb',
+        padding: '12px 24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexShrink: 0,
+        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+        zIndex: 10,
+      }}>
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Lugares en A Coruña</h2>
-          <p className="text-sm text-gray-500">{lugares.length} sitios encontrados</p>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#1f2937', margin: 0 }}>Explorar A Coruña</h2>
+          <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0' }}>{lugares.length} lugares para tu mascota</p>
         </div>
-        <div className="flex gap-2">
-          {/* Future search/filter chips can go here */}
-          <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium text-gray-600">Todo</span>
-          <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium text-gray-600">Bio</span>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button style={{ background: '#f3f4f6', border: 'none', padding: '6px 16px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, color: '#374151', cursor: 'pointer' }}>Filtros</button>
+          <button style={{ background: 'rgba(45,106,79,0.1)', border: 'none', padding: '6px 16px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, color: '#2d6a4f', cursor: 'pointer' }}>Categorías</button>
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-        {/* List View */}
-        <div className="w-full md:w-1/3 lg:w-1/4 h-1/2 md:h-full overflow-y-auto bg-gray-50 border-r">
-          {cargando && <div className="p-8 text-center text-gray-500">Cargando...</div>}
-          {error && <div className="p-8 text-center text-red-500 text-sm">{error}</div>}
-          
-          <div className="p-4 space-y-4">
+      {/* Contenido principal: sidebar + mapa — NUNCA hace scroll vertical en este nivel */}
+      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden', minHeight: 0 }}>
+
+        {/* Sidebar de lugares — SOLO AQUÍ hay scroll */}
+        <div style={{
+          width: '380px',
+          minWidth: '320px',
+          height: '100%',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          background: '#f9fafb',
+          borderRight: '1px solid #e5e7eb',
+          flexShrink: 0,
+        }}>
+          {cargando && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '12px' }}>
+              <div style={{ width: '32px', height: '32px', border: '4px solid rgba(45,106,79,0.2)', borderTopColor: '#2d6a4f', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              <p style={{ fontSize: '13px', color: '#9ca3af' }}>Buscando lugares...</p>
+            </div>
+          )}
+          {error && (
+            <div style={{ margin: '16px', padding: '16px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '12px', textAlign: 'center', color: '#dc2626', fontSize: '13px' }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {lugares.map((lugar: Lugar) => (
-              <div 
-                key={lugar.id} 
+              <div
+                key={lugar.id}
                 onClick={() => setLugarSeleccionado(lugar)}
-                className={`flex flex-col rounded-xl border cursor-pointer transition-all overflow-hidden hover:shadow-lg hover:border-forest-green/30 hover:bg-gray-50/50 ${
-                  lugarSeleccionado?.id === lugar.id 
-                    ? 'bg-green-50 border-forest-green shadow-md ring-1 ring-forest-green scale-[1.02]' 
-                    : 'bg-white border-gray-100 shadow-sm'
-                }`}
+                style={{
+                  background: '#fff',
+                  border: lugarSeleccionado?.id === lugar.id ? '2px solid #2d6a4f' : '1px solid #f3f4f6',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  boxShadow: lugarSeleccionado?.id === lugar.id ? '0 8px 24px rgba(45,106,79,0.15)' : '0 1px 4px rgba(0,0,0,0.06)',
+                  transition: 'all 0.25s ease',
+                  transform: lugarSeleccionado?.id === lugar.id ? 'scale(1.01)' : 'scale(1)',
+                }}
               >
                 {lugar.fotoUrl && (
-                  <div className="w-full h-32 overflow-hidden">
-                    <img src={lugar.fotoUrl} alt={lugar.nombre} className="w-full h-full object-cover transition-transform hover:scale-110" />
+                  <div style={{ width: '100%', height: '180px', overflow: 'hidden', position: 'relative', background: '#e5e7eb' }}>
+                    <img
+                      src={lugar.fotoUrl}
+                      alt={lugar.nombre}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
+                      onError={(e) => {
+                        // Fallback a imagen genérica si Unsplash no carga
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=800';
+                        (e.target as HTMLImageElement).onerror = null;
+                      }}
+                    />
+                    <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
+                      <span style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)', color: '#2d6a4f', fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+                        {traducirCategoria(lugar.categoria)}
+                      </span>
+                    </div>
                   </div>
                 )}
-                <div className="p-3">
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-bold text-sm text-gray-800 leading-tight flex-1">{lugar.nombre}</h3>
-                    <span className="text-[9px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full ml-2 shrink-0">
-                      {traducirCategoria(lugar.categoria)}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-gray-500 line-clamp-2 mb-2">
+                <div style={{ padding: '14px' }}>
+                  <h3 style={{ fontWeight: 700, fontSize: '14px', color: '#1f2937', margin: '0 0 4px', lineHeight: 1.3 }}>{lugar.nombre}</h3>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 10px', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {lugar.descripcion}
                   </p>
-                  <div className="flex items-center text-[10px] text-gray-400">
-                    <span className="mr-1">📍</span>
-                    <span className="truncate">{lugar.direccion}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid #f9fafb' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', fontSize: '11px', color: '#9ca3af', overflow: 'hidden', maxWidth: '70%' }}>
+                      <svg style={{ width: '12px', height: '12px', marginRight: '4px', flexShrink: 0 }} fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lugar.direccion}</span>
+                    </div>
+                    <button style={{ fontSize: '10px', fontWeight: 700, color: '#2d6a4f', background: 'none', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Ver más
+                    </button>
                   </div>
                 </div>
               </div>
@@ -80,10 +132,11 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Map View */}
-        <div className="flex-1 h-1/2 md:h-full bg-gray-200">
+        {/* Mapa — SIEMPRE visible, ocupa el espacio restante */}
+        <div style={{ flex: 1, height: '100%', position: 'relative', minWidth: 0 }}>
           <MapComponent lugares={lugares} />
         </div>
+
       </div>
     </div>
   )

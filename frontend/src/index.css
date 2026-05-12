@@ -2,15 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+html,
+body,
+#root {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0;
+  padding: 0;
 }
 
-html, body {
-  margin: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+body {
+  min-width: 320px;
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
