@@ -2,8 +2,8 @@ import { useEffect, useState, useMemo } from 'react'
 import { useLugarStore } from '../store/lugarStore'
 import type { Lugar } from '../services/lugarService'
 import MapComponent from '../components/MapComponent'
+import { Search, MapPin, ChevronDown } from 'lucide-react'
 
-// Categorías disponibles con etiqueta en español y emoji
 const CATEGORIAS = [
   { valor: 'TODOS',       etiqueta: 'Todos',          emoji: '🐾' },
   { valor: 'PARQUE',      etiqueta: 'Parques',         emoji: '🌳' },
@@ -15,9 +15,9 @@ const CATEGORIAS = [
   { valor: 'PET_FRIENDLY', etiqueta: 'Pet Friendly',  emoji: '☕' },
 ]
 
-const VERDE = '#2d6a4f'
-
 const Home = () => {
+  // Using local state for the filter to keep it simple, or we could add to lugarStore
+  // The current lugarStore in this session doesn't have it, so we'll use a local state.
   const [categoriaActiva, setCategoriaActiva] = useState('TODOS')
 
   const traducirCategoria = (cat: string) => {
@@ -32,7 +32,6 @@ const Home = () => {
 
   useEffect(() => { cargarLugares() }, [cargarLugares])
 
-  // Filtrado reactivo por categoría
   const lugaresFiltrados = useMemo(() => {
     return lugares.filter((lugar: Lugar) => {
       return categoriaActiva === 'TODOS' || lugar.categoria.toUpperCase() === categoriaActiva
@@ -40,130 +39,99 @@ const Home = () => {
   }, [lugares, categoriaActiva])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%', overflow: 'hidden' }}>
-
+    <div className="flex flex-col flex-1 w-full h-full overflow-hidden bg-gray-50">
       {/* Header superior */}
-      <div style={{
-        background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '12px 24px',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        flexShrink: 0, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', zIndex: 10,
-      }}>
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center shrink-0 shadow-sm z-10">
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#1f2937', margin: 0 }}>Explorar A Coruña</h2>
-          <p style={{ fontSize: '12px', color: '#6b7280', margin: '2px 0 0' }}>
+          <h2 className="text-lg font-bold text-gray-900 m-0">Explorar A Coruña</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
             {lugaresFiltrados.length} {lugaresFiltrados.length === 1 ? 'lugar' : 'lugares'} para tu mascota
           </p>
         </div>
       </div>
 
       {/* Contenido principal */}
-      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, width: '100%', overflow: 'hidden' }}>
-
-        {/* ── Sidebar izquierdo ── */}
-        <div style={{
-          width: '380px', minWidth: '320px', height: '100%',
-          overflowY: 'auto', overflowX: 'hidden',
-          background: '#f9fafb', borderRight: '1px solid #e5e7eb',
-          flexShrink: 0, display: 'flex', flexDirection: 'column',
-        }}>
-
+      <div className="flex flex-row flex-1 w-full overflow-hidden">
+        {/* Sidebar izquierdo */}
+        <div className="w-[380px] min-w-[320px] h-full overflow-y-auto overflow-x-hidden bg-gray-50 border-r border-gray-200 shrink-0 flex flex-col">
+          
           {/* Desplegable de categoría */}
-          <div style={{ padding: '12px 16px 10px', background: '#f9fafb', flexShrink: 0 }}>
-            <div style={{ position: 'relative' }}>
+          <div className="p-4 pb-2 bg-gray-50 shrink-0 sticky top-0 z-10">
+            <div className="relative">
               <select
                 value={categoriaActiva}
                 onChange={(e) => setCategoriaActiva(e.target.value)}
-                style={{
-                  width: '100%', boxSizing: 'border-box',
-                  padding: '10px 36px 10px 14px',
-                  border: '1.5px solid #e5e7eb', borderRadius: '12px',
-                  fontSize: '13px', fontWeight: 600, color: '#1f2937',
-                  background: '#fff', cursor: 'pointer', outline: 'none',
-                  appearance: 'none', WebkitAppearance: 'none',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  transition: 'border-color 0.2s',
-                }}
-                onFocus={(e) => (e.target.style.borderColor = VERDE)}
-                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                className="w-full box-border py-2.5 pl-4 pr-10 border-1.5 border-gray-200 rounded-xl text-sm font-semibold text-gray-800 bg-white cursor-pointer outline-none appearance-none shadow-sm transition-colors focus:border-forest-green focus:ring-1 focus:ring-forest-green"
               >
                 {CATEGORIAS.map(({ valor, etiqueta, emoji }) => (
                   <option key={valor} value={valor}>{emoji} {etiqueta}</option>
                 ))}
               </select>
-              {/* Flecha decorativa */}
-              <svg
-                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: '#6b7280', pointerEvents: 'none' }}
-                fill="none" stroke="currentColor" viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             </div>
           </div>
 
           {/* Lista de resultados */}
           {cargando && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '12px' }}>
-              <div style={{ width: '32px', height: '32px', border: '4px solid rgba(45,106,79,0.2)', borderTopColor: VERDE, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-              <p style={{ fontSize: '13px', color: '#9ca3af' }}>Buscando lugares...</p>
+            <div className="flex flex-col items-center justify-center h-48 gap-3">
+              <div className="w-8 h-8 border-4 border-forest-green/20 border-t-forest-green rounded-full animate-spin" />
+              <p className="text-sm text-gray-400">Buscando lugares...</p>
             </div>
           )}
+          
           {error && (
-            <div style={{ margin: '16px', padding: '16px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '12px', textAlign: 'center', color: '#dc2626', fontSize: '13px' }}>
+            <div className="m-4 p-4 bg-red-50 border border-red-200 rounded-xl text-center text-red-600 text-sm">
               {error}
             </div>
           )}
 
           {!cargando && lugaresFiltrados.length === 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '160px', gap: '8px' }}>
-              <span style={{ fontSize: '32px' }}>🔍</span>
-              <p style={{ fontSize: '13px', color: '#9ca3af', fontWeight: 500 }}>Sin resultados para esa búsqueda</p>
+            <div className="flex flex-col items-center justify-center h-40 gap-2">
+              <Search className="w-8 h-8 text-gray-300" />
+              <p className="text-sm text-gray-400 font-medium">Sin resultados para esa búsqueda</p>
             </div>
           )}
 
-          <div style={{ padding: '8px 16px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="p-4 flex flex-col gap-4">
             {lugaresFiltrados.map((lugar: Lugar) => (
               <div
                 key={lugar.id}
                 onClick={() => setLugarSeleccionado(lugar)}
-                style={{
-                  background: '#fff',
-                  border: lugarSeleccionado?.id === lugar.id ? `2px solid ${VERDE}` : '1px solid #f3f4f6',
-                  borderRadius: '16px', overflow: 'hidden', cursor: 'pointer',
-                  boxShadow: lugarSeleccionado?.id === lugar.id ? '0 8px 24px rgba(45,106,79,0.15)' : '0 1px 4px rgba(0,0,0,0.06)',
-                  transition: 'all 0.25s ease',
-                  transform: lugarSeleccionado?.id === lugar.id ? 'scale(1.01)' : 'scale(1)',
-                }}
+                className={`bg-white rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ease-out border ${
+                  lugarSeleccionado?.id === lugar.id 
+                    ? 'border-forest-green ring-2 ring-forest-green/20 shadow-md scale-[1.02]' 
+                    : 'border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200'
+                }`}
               >
                 {lugar.fotoUrl && (
-                  <div style={{ width: '100%', height: '180px', overflow: 'hidden', position: 'relative', background: '#e5e7eb' }}>
+                  <div className="w-full h-44 overflow-hidden relative bg-gray-200">
                     <img
-                      src={lugar.fotoUrl} alt={lugar.nombre}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
+                      src={lugar.fotoUrl} 
+                      alt={lugar.nombre}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=800'
                         ;(e.target as HTMLImageElement).onerror = null
                       }}
                     />
-                    <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
-                      <span style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)', color: VERDE, fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+                    <div className="absolute top-3 left-3">
+                      <span className="bg-white/95 backdrop-blur-sm text-forest-green text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm">
                         {traducirCategoria(lugar.categoria)}
                       </span>
                     </div>
                   </div>
                 )}
-                <div style={{ padding: '14px' }}>
-                  <h3 style={{ fontWeight: 700, fontSize: '14px', color: '#1f2937', margin: '0 0 4px', lineHeight: 1.3 }}>{lugar.nombre}</h3>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 10px', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                <div className="p-4">
+                  <h3 className="font-bold text-sm text-gray-900 mb-1 leading-snug">{lugar.nombre}</h3>
+                  <p className="text-xs text-gray-500 mb-3 leading-relaxed line-clamp-2">
                     {lugar.descripcion}
                   </p>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid #f9fafb' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', fontSize: '11px', color: '#9ca3af', overflow: 'hidden', maxWidth: '70%' }}>
-                      <svg style={{ width: '12px', height: '12px', marginRight: '4px', flexShrink: 0 }} fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                      </svg>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lugar.direccion}</span>
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                    <div className="flex items-center text-[11px] text-gray-400 overflow-hidden w-2/3">
+                      <MapPin className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span className="truncate">{lugar.direccion}</span>
                     </div>
-                    <button style={{ fontSize: '10px', fontWeight: 700, color: VERDE, background: 'none', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <button className="text-[10px] font-bold text-forest-green uppercase tracking-wider hover:text-green-800 transition-colors">
                       Ver más
                     </button>
                   </div>
@@ -174,10 +142,9 @@ const Home = () => {
         </div>
 
         {/* Mapa */}
-        <div style={{ flex: 1, height: '100%', position: 'relative', overflow: 'hidden' }}>
+        <div className="flex-1 h-full relative overflow-hidden bg-gray-100">
           <MapComponent lugares={lugaresFiltrados} />
         </div>
-
       </div>
     </div>
   )
