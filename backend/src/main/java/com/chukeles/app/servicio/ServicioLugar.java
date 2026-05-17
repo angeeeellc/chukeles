@@ -1,10 +1,10 @@
 package com.chukeles.app.servicio;
 
-import com.chukeles.app.dto.PeticionLugar;
-import com.chukeles.app.exception.RecursoNoEncontradoException;
-import com.chukeles.app.model.Categoria;
-import com.chukeles.app.model.Lugar;
-import com.chukeles.app.repository.LugarRepository;
+import com.chukeles.app.transferencia.PeticionLugar;
+import com.chukeles.app.excepcion.RecursoNoEncontradoException;
+import com.chukeles.app.modelo.Categoria;
+import com.chukeles.app.modelo.Lugar;
+import com.chukeles.app.repositorio.RepositorioLugar;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ServicioLugar {
 
-    private final LugarRepository lugarRepository;
+    private final RepositorioLugar repositorioLugar;
 
     /**
      * Busca lugares con filtros opcionales combinados.
@@ -39,13 +39,13 @@ public class ServicioLugar {
         boolean tieneCategoria = categoria != null;
 
         if (tieneNombre && tieneCategoria) {
-            resultados = lugarRepository.findByCategoriaAndNombreContainingIgnoreCase(categoria, nombre);
+            resultados = repositorioLugar.findByCategoriaAndNombreContainingIgnoreCase(categoria, nombre);
         } else if (tieneNombre) {
-            resultados = lugarRepository.findByNombreContainingIgnoreCase(nombre);
+            resultados = repositorioLugar.findByNombreContainingIgnoreCase(nombre);
         } else if (tieneCategoria) {
-            resultados = lugarRepository.findByCategoria(categoria);
+            resultados = repositorioLugar.findByCategoria(categoria);
         } else {
-            resultados = lugarRepository.findAll();
+            resultados = repositorioLugar.findAll();
         }
 
         // Filtro de distancia Haversine (si se proporcionan coordenadas y radio)
@@ -60,7 +60,7 @@ public class ServicioLugar {
     }
 
     public Lugar obtenerPorId(Long id) {
-        return lugarRepository.findById(id)
+        return repositorioLugar.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Lugar no encontrado con id: " + id));
     }
 
@@ -77,7 +77,7 @@ public class ServicioLugar {
                 .fotoUrl(peticion.getFotoUrl())
                 .aprobado(peticion.getAprobado() != null ? peticion.getAprobado() : false)
                 .build();
-        return lugarRepository.save(lugar);
+        return repositorioLugar.save(lugar);
     }
 
     public Lugar editar(Long id, PeticionLugar peticion) {
@@ -92,14 +92,14 @@ public class ServicioLugar {
         lugar.setSitioWeb(peticion.getSitioWeb());
         if (peticion.getFotoUrl() != null) lugar.setFotoUrl(peticion.getFotoUrl());
         if (peticion.getAprobado() != null) lugar.setAprobado(peticion.getAprobado());
-        return lugarRepository.save(lugar);
+        return repositorioLugar.save(lugar);
     }
 
     public void eliminar(Long id) {
-        if (!lugarRepository.existsById(id)) {
+        if (!repositorioLugar.existsById(id)) {
             throw new RecursoNoEncontradoException("Lugar no encontrado con id: " + id);
         }
-        lugarRepository.deleteById(id);
+        repositorioLugar.deleteById(id);
     }
 
     /**

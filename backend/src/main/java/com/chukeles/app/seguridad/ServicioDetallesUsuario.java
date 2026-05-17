@@ -1,7 +1,7 @@
 package com.chukeles.app.seguridad;
 
-import com.chukeles.app.model.Usuario;
-import com.chukeles.app.repository.UsuarioRepository;
+import com.chukeles.app.modelo.Usuario;
+import com.chukeles.app.repositorio.RepositorioUsuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
@@ -16,11 +16,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ServicioDetallesUsuario implements UserDetailsService {
 
-    private final UsuarioRepository usuarioRepository;
+    private final RepositorioUsuario repositorioUsuario;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        Usuario usuario = repositorioUsuario.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
 
         return new org.springframework.security.core.userdetails.User(

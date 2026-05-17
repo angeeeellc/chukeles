@@ -1,61 +1,176 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import Home from './pages/Home'
-import PlaceDetail from './pages/PlaceDetail'
-import Events from './pages/Events'
-import BulletinBoard from './pages/BulletinBoard'
-import Marketplace from './pages/Marketplace'
-import Login from './pages/auth/Login'
-import Register from './pages/auth/Register'
-import AdminDashboard from './pages/admin/AdminDashboard'
+import { BrowserRouter as Router, Routes, Route, NavLink, Link, useNavigate } from 'react-router-dom'
+import Inicio from './paginas/Inicio'
+import DetalleLugar from './paginas/DetalleLugar'
+import Eventos from './paginas/Eventos'
+import TablonAnuncios from './paginas/TablonAnuncios'
+import Mercado from './paginas/Mercado'
+import IniciarSesion from './paginas/auth/IniciarSesion'
+import Registro from './paginas/auth/Registro'
+import PanelAdministrador from './paginas/admin/PanelAdministrador'
+import NoEncontrado from './paginas/NoEncontrado'
+import ContenedorNotificaciones from './componentes/Notificacion'
+import { useUserStore } from './estado/estadoUsuario'
+import { useUiStore } from './estado/estadoUi'
+import { LogOut, Menu, X } from 'lucide-react'
+import { useState } from 'react'
 
+// ── Navbar interno (necesita acceso a useNavigate) ────────────────────────────
+const Navbar = () => {
+  const { isAuthenticated, user, logout } = useUserStore()
+  const { addToast } = useUiStore()
+  const navigate = useNavigate()
+  const [menuMovil, setMenuMovil] = useState(false)
+
+  const handleLogout = () => {
+    logout()
+    addToast('Sesión cerrada correctamente.', 'info')
+    navigate('/')
+    setMenuMovil(false)
+  }
+
+  // Clase activa/inactiva para los NavLinks del navbar
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+      isActive
+        ? 'bg-white text-forest-green shadow-sm'
+        : 'text-white/80 hover:text-white hover:bg-white/10'
+    }`
+
+  const navLinkMobilClass = ({ isActive }: { isActive: boolean }) =>
+    `block px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+      isActive ? 'bg-white text-forest-green' : 'text-white/80 hover:text-white hover:bg-white/10'
+    }`
+
+  return (
+    <nav className="bg-forest-green h-16 flex items-center shadow-md z-50 w-full shrink-0 relative">
+      <div className="w-full px-4 md:px-8 flex justify-between items-center">
+
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-3 cursor-pointer" onClick={() => setMenuMovil(false)}>
+          <div className="bg-white p-1.5 rounded-lg shadow-sm">
+            <svg className="w-6 h-6 text-forest-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"
+                d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="hidden sm:block">
+            <h1 className="text-xl font-bold text-white tracking-tight leading-none">Chukeles</h1>
+            <p className="text-[10px] text-green-100 font-medium uppercase tracking-widest">A Coruña</p>
+          </div>
+        </Link>
+
+        {/* Links de navegación — desktop */}
+        <div className="hidden md:flex items-center gap-1">
+          <NavLink to="/"       end className={navLinkClass}>Mapa</NavLink>
+          <NavLink to="/eventos"     className={navLinkClass}>Eventos</NavLink>
+          <NavLink to="/tablon"      className={navLinkClass}>Tablón</NavLink>
+          <NavLink to="/mercado"     className={navLinkClass}>Tienda</NavLink>
+        </div>
+
+        {/* Auth zone — desktop */}
+        <div className="hidden md:flex items-center gap-3">
+          {isAuthenticated ? (
+            <>
+              <span className="text-white/80 text-sm font-medium truncate max-w-32">
+                Hola, {user?.name?.split(' ')[0] || 'Usuario'} 👋
+              </span>
+              <button
+                id="navbar-logout"
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 bg-white/10 text-white/90 hover:bg-white/20
+                           px-4 py-2 rounded-full text-sm font-semibold transition-all"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Salir
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/registro"
+                className="text-white/90 text-sm font-medium hover:text-white transition-colors"
+              >
+                Registro
+              </Link>
+              <Link
+                to="/iniciar-sesion"
+                id="navbar-login"
+                className="bg-white text-forest-green px-6 py-2 rounded-full text-sm font-bold
+                           shadow-lg hover:bg-gray-50 active:scale-95 transition-all"
+              >
+                Acceder
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Hamburger — móvil */}
+        <button
+          id="navbar-menu-toggle"
+          onClick={() => setMenuMovil(!menuMovil)}
+          className="md:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+          aria-label="Menú"
+        >
+          {menuMovil ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Menú móvil desplegable */}
+      {menuMovil && (
+        <div className="absolute top-16 left-0 right-0 bg-forest-green border-t border-white/10
+                        shadow-xl z-40 p-4 flex flex-col gap-1 md:hidden">
+          <NavLink to="/"       end className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>🗺️ Mapa</NavLink>
+          <NavLink to="/eventos"     className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>🐕 Eventos</NavLink>
+          <NavLink to="/tablon"      className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>📋 Tablón</NavLink>
+          <NavLink to="/mercado"     className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>🛍️ Tienda</NavLink>
+
+          <div className="border-t border-white/10 my-2" />
+
+          {isAuthenticated ? (
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold
+                         text-white/80 hover:text-white hover:bg-white/10 transition-all"
+            >
+              <LogOut className="w-4 h-4" /> Cerrar sesión
+            </button>
+          ) : (
+            <>
+              <NavLink to="/registro" className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>Registro</NavLink>
+              <NavLink to="/iniciar-sesion"    className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>Acceder</NavLink>
+            </>
+          )}
+        </div>
+      )}
+    </nav>
+  )
+}
+
+// ── App raíz ──────────────────────────────────────────────────────────────────
 function App() {
   return (
     <Router>
       <div className="h-screen w-screen bg-gray-50 flex flex-col overflow-hidden">
-        {/* Navbar */}
-        <nav className="bg-forest-green h-16 flex items-center shadow-md z-50 w-full shrink-0">
-          <div className="w-full px-4 md:px-8 flex justify-between items-center">
-            <Link to="/" className="flex items-center gap-3 cursor-pointer">
-              <div className="bg-white p-1.5 rounded-lg shadow-sm">
-                <svg className="w-6 h-6 text-forest-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-white tracking-tight">Chukeles</h1>
-                <p className="text-[10px] text-green-100 font-medium uppercase tracking-widest -mt-1">A Coruña</p>
-              </div>
-            </Link>
+        <Navbar />
 
-            <div className="hidden md:flex items-center gap-1">
-              <Link to="/" className="px-4 py-2 text-white bg-white/20 rounded-full text-sm font-semibold transition-all">Mapa</Link>
-              <Link to="/events" className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/10 rounded-full text-sm font-semibold transition-all">Eventos</Link>
-              <Link to="/board" className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/10 rounded-full text-sm font-semibold transition-all">Tablón</Link>
-              <Link to="/market" className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/10 rounded-full text-sm font-semibold transition-all">Tienda</Link>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <Link to="/register" className="hidden sm:block text-white/90 text-sm font-medium hover:text-white">Registro</Link>
-              <Link to="/login" className="bg-white text-forest-green px-6 py-2 rounded-full text-sm font-bold shadow-lg hover:bg-gray-50 active:scale-95 transition-all">
-                Acceder
-              </Link>
-            </div>
-          </div>
-        </nav>
-
-        {/* Main Content Area */}
+        {/* Contenido de rutas */}
         <main className="flex-1 flex flex-col overflow-hidden w-full relative">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/place/:id" element={<PlaceDetail />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/board" element={<BulletinBoard />} />
-            <Route path="/market" element={<Marketplace />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/admin/*" element={<AdminDashboard />} />
+            <Route path="/"          element={<Inicio />} />
+            <Route path="/place/:id" element={<DetalleLugar />} />
+            <Route path="/eventos"    element={<Eventos />} />
+            <Route path="/tablon"     element={<TablonAnuncios />} />
+            <Route path="/mercado"    element={<Mercado />} />
+            <Route path="/iniciar-sesion"     element={<IniciarSesion />} />
+            <Route path="/registro"  element={<Registro />} />
+            <Route path="/admin/*"   element={<PanelAdministrador />} />
+            {/* 404 */}
+            <Route path="*"          element={<NoEncontrado />} />
           </Routes>
         </main>
+
+        {/* Toast notifications — globales */}
+        <ContenedorNotificaciones />
       </div>
     </Router>
   )

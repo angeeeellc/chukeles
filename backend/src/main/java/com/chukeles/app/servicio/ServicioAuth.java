@@ -1,11 +1,11 @@
 package com.chukeles.app.servicio;
 
-import com.chukeles.app.dto.PeticionLogin;
-import com.chukeles.app.dto.PeticionRegistro;
-import com.chukeles.app.dto.RespuestaAuth;
-import com.chukeles.app.model.Rol;
-import com.chukeles.app.model.Usuario;
-import com.chukeles.app.repository.UsuarioRepository;
+import com.chukeles.app.transferencia.PeticionLogin;
+import com.chukeles.app.transferencia.PeticionRegistro;
+import com.chukeles.app.transferencia.RespuestaAuth;
+import com.chukeles.app.modelo.Rol;
+import com.chukeles.app.modelo.Usuario;
+import com.chukeles.app.repositorio.RepositorioUsuario;
 import com.chukeles.app.seguridad.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,14 +22,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ServicioAuth {
 
-    private final UsuarioRepository usuarioRepository;
+    private final RepositorioUsuario repositorioUsuario;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final com.chukeles.app.seguridad.ServicioDetallesUsuario servicioDetallesUsuario;
 
     public RespuestaAuth registrar(PeticionRegistro peticion) {
-        if (usuarioRepository.findByEmail(peticion.getEmail()).isPresent()) {
+        if (repositorioUsuario.findByEmail(peticion.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Ya existe un usuario con ese email");
         }
 
@@ -41,7 +41,7 @@ public class ServicioAuth {
                 .rol(Rol.ROL_USUARIO)
                 .build();
 
-        usuarioRepository.save(nuevoUsuario);
+        repositorioUsuario.save(nuevoUsuario);
 
         UserDetails detallesUsuario = servicioDetallesUsuario.loadUserByUsername(nuevoUsuario.getEmail());
         String token = jwtUtil.generarToken(detallesUsuario);
@@ -60,7 +60,7 @@ public class ServicioAuth {
                 new UsernamePasswordAuthenticationToken(peticion.getEmail(), peticion.getContrasena())
         );
 
-        Usuario usuario = usuarioRepository.findByEmail(peticion.getEmail())
+        Usuario usuario = repositorioUsuario.findByEmail(peticion.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Credenciales incorrectas"));
 
         UserDetails detallesUsuario = servicioDetallesUsuario.loadUserByUsername(usuario.getEmail());
