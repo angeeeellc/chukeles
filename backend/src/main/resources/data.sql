@@ -3,8 +3,16 @@
 -- Desactivar checks para limpieza total (MySQL)
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE lugares;
-DELETE FROM usuarios WHERE email IN ('admin@chukeles.es', 'usuario@chukeles.es');
+TRUNCATE TABLE usuarios;
+TRUNCATE TABLE publicaciones_tablon;
+TRUNCATE TABLE anuncios_mercado;
+TRUNCATE TABLE eventos;
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- 1. Carga de usuarios (Especificando ID explícito para consistencia de FKs)
+INSERT INTO usuarios (id, email, contrasena, nombre, telefono, rol, foto_url) VALUES
+(1, 'admin@chukeles.es',   '$2a$12$vdwKm82fWRYBwDxdumH6F.8Y1iYEBfaUxD8Dd.yCIONRDxe5sMCZu', 'Administrador',  '600000000', 'ROL_ADMIN',   NULL),
+(2, 'usuario@chukeles.es', '$2a$12$QOlR2Q1luwRAVg0HuR.b4eWWBWG6.pshhH18iTRiNDDKvK/TUUqRK', 'Usuario Prueba', '611111111', 'ROL_USUARIO', NULL);
 
 -- 2. Carga de lugares
 INSERT INTO lugares (nombre, categoria, direccion, lat, lng, descripcion, telefono, sitio_web, foto_url, aprobado) VALUES
@@ -42,10 +50,18 @@ INSERT INTO lugares (nombre, categoria, direccion, lat, lng, descripcion, telefo
 ('Cafe Malabar', 'PET_FRIENDLY', 'Rua Compostela, 4, 15003 A Coruna', 43.3695, -8.4020, 'Cafe con encanto en el centro, terraza y ambiente tranquilo dog friendly.', '881 12 13 26', '', 'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&q=80&w=800', true),
 ('Tiendanimal Oleiros', 'TIENDA', 'Av. Das Mariñas, N-VI, km. 585, 15171 Oleiros', 43.3212, -8.3169, 'Tienda especializada en alimentacion natural y accesorios premium para mascotas.', '981 34 56 78', '', 'https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?auto=format&fit=crop&q=80&w=800', true);
 
--- 3. Limpieza de usuarios de prueba (evita duplicados)
-DELETE FROM usuarios WHERE email IN ('admin@chukeles.es', 'usuario@chukeles.es');
+-- 3. Carga de publicaciones del tablón
+INSERT INTO publicaciones_tablon (id, titulo, contenido, info_contacto, user_id, creado_en) VALUES
+(1, 'Busco paseador de perros en zona de Riazor', 'Hola! Necesito a alguien de confianza que pueda pasear a mi golden retriever los martes y jueves por la tarde. Zona del paseo marítimo/Riazor.', 'Contacto: 655 44 33 22 (Martín)', 2, '2026-05-17 10:00:00'),
+(2, 'Campamento canino este fin de semana', 'Os informo de que quedan plazas libres para el campamento de socialización que organiza Montegatto este sábado. ¡Muy recomendable!', 'Más info en la web de Montegatto', 2, '2026-05-17 12:30:00');
 
--- 4. Carga de usuarios (Sintaxis estándar INSERT INTO)
-INSERT INTO usuarios (email, contrasena, nombre, telefono, rol, foto_url) VALUES
-('admin@chukeles.es',   '$2a$12$oKJVWJ0BzFf5q2IqZTjgk.dQP9UD5K9T6Fk3W4zKD35GzGvdV9q36', 'Administrador',  '600000000', 'ROL_ADMIN',   NULL),
-('usuario@chukeles.es', '$2a$12$5NZpK4vIgkP0QFBm78pV.OuaBX/X8Y3O/rA.ZLH/tFv4VxfDe34KS', 'Usuario Prueba', '611111111', 'ROL_USUARIO', NULL);
+-- 4. Carga de anuncios de mercado (tienda)
+INSERT INTO anuncios_mercado (id, titulo, precio, descripcion, foto_url, categoria, estado, user_id, creado_en) VALUES
+(1, 'Transportín homologado mediano', 45.0, 'Vendo transportín en perfecto estado, usado solo dos veces. Medidas 60x40x40 cm. Homologado por IATA para viajar en avión.', 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800', 'ACCESORIOS', 'DISPONIBLE', 2, '2026-05-17 09:15:00'),
+(2, 'Arnés ajustable Julius K9 (Talla L)', 25.0, 'Arnés de color rojo reflectante, ultra resistente. Ideal para perros de raza mediana a grande (20-30 kg). Prácticamente nuevo.', 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=800', 'ACCESORIOS', 'DISPONIBLE', 2, '2026-05-17 11:45:00');
+
+-- 5. Carga de quedadas caninas (eventos)
+INSERT INTO eventos (id, titulo, fecha, hora, ubicacion, lat, lng, max_participantes, descripcion, user_id) VALUES
+(1, 'Quedada Golden Retrievers en Bens', '2026-06-20', '11:00:00', 'Parque de Bens (Zona Canina)', 43.3668, -8.4423, 15, 'Quedada informal para pasar la mañana, correr y socializar a nuestros peludos en la zona vallada de Bens. ¡Traed agua!', 2),
+(2, 'Paseo grupal por Santa Margarita', '2026-06-27', '18:30:00', 'Entrada principal de Santa Margarita', 43.3617, -8.4125, 10, 'Paseo tranquilo con correa por las zonas arboladas del parque. Excelente para perros tímidos o en proceso de socialización.', 2);
+

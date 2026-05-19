@@ -1,6 +1,4 @@
-
-
-const Eventos = () => {
+﻿const Eventos = () => {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold text-forest-green">Quedadas Caninas</h1>
