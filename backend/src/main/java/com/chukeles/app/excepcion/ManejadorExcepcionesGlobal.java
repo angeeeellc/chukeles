@@ -54,6 +54,7 @@ public class ManejadorExcepcionesGlobal {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<RespuestaError> manejarGeneral(Exception ex) {
+        ex.printStackTrace(); // Registrar el error en los logs del servidor
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new RespuestaError(500, "Error interno del servidor: " + ex.getMessage()));
     }

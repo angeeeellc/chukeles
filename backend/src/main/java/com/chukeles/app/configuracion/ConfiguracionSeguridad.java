@@ -52,6 +52,8 @@ public class ConfiguracionSeguridad {
                 .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tablon/**").permitAll()
+                // Fotos subidas: acceso público de lectura
+                .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                 // Swagger / H2 console
                 .requestMatchers(
                     "/swagger-ui/**",

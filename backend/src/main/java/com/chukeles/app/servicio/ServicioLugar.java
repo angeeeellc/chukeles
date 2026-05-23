@@ -103,6 +103,20 @@ public class ServicioLugar {
     }
 
     /**
+     * Actualiza únicamente la URL de foto de un lugar.
+     * Llamado por ControladorFotos tras guardar el fichero en disco.
+     *
+     * @param id     ID del lugar
+     * @param fotoUrl URL relativa pública, ej: /uploads/lugar_42_uuid.jpg
+     * @return El lugar actualizado
+     */
+    public Lugar actualizarFoto(Long id, String fotoUrl) {
+        Lugar lugar = obtenerPorId(id);
+        lugar.setFotoUrl(fotoUrl);
+        return repositorioLugar.save(lugar);
+    }
+
+    /**
      * Fórmula Haversine para calcular la distancia entre dos puntos geográficos en km.
      */
     private double calcularDistanciaKm(double lat1, double lng1, double lat2, double lng2) {

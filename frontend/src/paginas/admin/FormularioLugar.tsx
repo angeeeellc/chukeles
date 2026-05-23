@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, Save, Upload, ImageIcon, Loader2 } from 'lucide-react';
 import { fetchPlaceById, crearLugarApi, editarLugarApi } from '../../servicios/servicioLugar';
+import { subirFotoLugar } from '../../servicios/servicioFotos';
 import ComponenteMapaAdmin from '../../componentes/ComponenteMapaAdmin';
 import { useUiStore } from '../../estado/estadoUi';
 
@@ -11,31 +12,42 @@ interface FormularioLugarProps {
 }
 
 const CATEGORIAS = [
-  { value: 'VET', label: '🏥 Veterinario' },
-  { value: 'PARK', label: '🌳 Parque' },
-  { value: 'GROOMING', label: '✂️ Peluquería' },
-  { value: 'STORE', label: '🛍️ Tienda' },
-  { value: 'HOTEL', label: '🏨 Hotel' },
-  { value: 'TRAINING', label: '🐕 Adiestramiento' },
-  { value: 'OTHER', label: '📍 Otro' }
+  { value: 'VETERINARIO',    label: '🏥 Veterinario' },
+  { value: 'PARQUE',         label: '🌳 Parque' },
+  { value: 'PELUQUERIA',     label: '✂️ Peluquería' },
+  { value: 'TIENDA',         label: '🛍️ Tienda' },
+  { value: 'HOTEL',          label: '🏨 Hotel' },
+  { value: 'ADIESTRAMIENTO', label: '🐕 Adiestramiento' },
+  { value: 'PET_FRIENDLY',   label: '🐾 Pet Friendly' },
+  { value: 'OTRO',           label: '📍 Otro' }
 ];
+
+const TAMANO_MAXIMO_MB = 5;
+const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png'];
 
 const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => {
   const { addToast } = useUiStore();
+  const inputArchivoRef = useRef<HTMLInputElement>(null);
+
   const [cargando, setCargando] = useState(false);
   const [cargandoDatos, setCargandoDatos] = useState(false);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
 
-  // Estados del formulario
+  // Estados del formulario de texto
   const [nombre, setNombre] = useState('');
-  const [categoria, setCategoria] = useState('OTHER');
+  const [categoria, setCategoria] = useState('OTRO');
   const [direccion, setDireccion] = useState('');
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [descripcion, setDescripcion] = useState('');
   const [telefono, setTelefono] = useState('');
   const [sitioWeb, setSitioWeb] = useState('');
-  const [fotoUrl, setFotoUrl] = useState('');
   const [aprobado, setAprobado] = useState(true);
+
+  // Estados de foto
+  const [fotoUrlActual, setFotoUrlActual] = useState<string | null>(null);   // URL ya guardada en BD
+  const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null); // Nuevo archivo pendiente
+  const [previsualizacion, setPrevisualizacion] = useState<string | null>(null);     // ObjectURL local
 
   // Cargar datos si estamos en modo edición
   useEffect(() => {
@@ -52,8 +64,7 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
           setDescripcion(lugar.descripcion);
           setTelefono(lugar.telefono || '');
           setSitioWeb(lugar.sitioWeb || '');
-          setFotoUrl(lugar.fotoUrl || '');
-          // En los modelos en español, aprobado puede ser null o boolean
+          setFotoUrlActual(lugar.fotoUrl || null);
           setAprobado((lugar as any).aprobado !== false);
         } catch (err) {
           addToast('Error al cargar la información del lugar.', 'error');
@@ -68,23 +79,62 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
       setNombre('');
       setCategoria('OTHER');
       setDireccion('');
-      setLat(43.3623); // Coordenadas del centro de A Coruña por defecto
+      setLat(43.3623);
       setLng(-8.4115);
       setDescripcion('');
       setTelefono('');
       setSitioWeb('');
-      setFotoUrl('');
+      setFotoUrlActual(null);
+      setArchivoSeleccionado(null);
+      setPrevisualizacion(null);
       setAprobado(true);
     }
   }, [lugarId, onClose, addToast]);
+
+  // Liberar ObjectURL al desmontar o al cambiar archivo
+  useEffect(() => {
+    return () => {
+      if (previsualizacion) URL.revokeObjectURL(previsualizacion);
+    };
+  }, [previsualizacion]);
 
   const handleSelectCoordinates = (selectedLat: number, selectedLng: number) => {
     setLat(parseFloat(selectedLat.toFixed(6)));
     setLng(parseFloat(selectedLng.toFixed(6)));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSeleccionarArchivo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+
+    // Validaciones en cliente (duplicadas en servidor)
+    if (!TIPOS_PERMITIDOS.includes(archivo.type)) {
+      addToast('Solo se permiten imágenes JPG o PNG.', 'error');
+      e.target.value = '';
+      return;
+    }
+    if (archivo.size > TAMANO_MAXIMO_MB * 1024 * 1024) {
+      addToast(`La imagen no puede superar los ${TAMANO_MAXIMO_MB} MB.`, 'error');
+      e.target.value = '';
+      return;
+    }
+
+    // Liberar ObjectURL anterior si existía
+    if (previsualizacion) URL.revokeObjectURL(previsualizacion);
+
+    setArchivoSeleccionado(archivo);
+    setPrevisualizacion(URL.createObjectURL(archivo));
+  };
+
+  const handleQuitarFoto = () => {
+    if (previsualizacion) URL.revokeObjectURL(previsualizacion);
+    setArchivoSeleccionado(null);
+    setPrevisualizacion(null);
+    if (inputArchivoRef.current) inputArchivoRef.current.value = '';
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!nombre || !categoria || !direccion || lat === null || lng === null || !descripcion) {
       addToast('Por favor, rellena todos los campos obligatorios.', 'info');
       return;
@@ -100,18 +150,43 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
       descripcion,
       telefono: telefono || undefined,
       sitioWeb: sitioWeb || undefined,
-      fotoUrl: fotoUrl || 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=800',
+      // Si no hay archivo nuevo, conservar la foto actual (o dejar en blanco)
+      fotoUrl: fotoUrlActual || undefined,
       aprobado
     };
 
     try {
+      let idLugar: number;
+
       if (lugarId) {
-        await editarLugarApi(lugarId, datos);
-        addToast('Lugar actualizado correctamente. 🐾', 'success');
+        const actualizado = await editarLugarApi(lugarId, datos);
+        idLugar = (actualizado as any).id ?? lugarId;
+        addToast('Datos del lugar actualizados. 🐾', 'success');
       } else {
-        await crearLugarApi(datos);
+        const creado = await crearLugarApi(datos);
+        idLugar = (creado as any).id;
         addToast('Lugar creado correctamente. 🎉', 'success');
       }
+
+      // Si hay un archivo nuevo, subirlo
+      if (archivoSeleccionado && idLugar) {
+        setSubiendoFoto(true);
+        try {
+          const respuesta = await subirFotoLugar(idLugar, archivoSeleccionado);
+          setFotoUrlActual(respuesta.fotoUrl);
+          addToast('Foto subida correctamente. 📸', 'success');
+        } catch (err: any) {
+          const mensaje = err?.response?.data?.message || 'No se pudo subir la foto.';
+          addToast(mensaje, 'error');
+          // No cerramos el modal: el lugar ya fue creado/editado, solo falló la foto
+          setCargando(false);
+          setSubiendoFoto(false);
+          return;
+        } finally {
+          setSubiendoFoto(false);
+        }
+      }
+
       onSave();
     } catch (err) {
       addToast('Error al guardar el lugar. Revisa los datos.', 'error');
@@ -130,6 +205,9 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
       </div>
     );
   }
+
+  // Imagen a mostrar: previsualización local > foto ya guardada > null
+  const imagenMostrada = previsualizacion || fotoUrlActual;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -232,22 +310,70 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
                 </div>
               </div>
 
-              {/* Foto URL */}
-              <div className="flex flex-col gap-1">
+              {/* ── Foto — input de archivo con previsualización ── */}
+              <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  URL de la Foto
+                  Foto del lugar
                 </label>
+
+                {/* Previsualización */}
+                <div className="relative w-full h-40 rounded-xl border-2 border-dashed border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center group">
+                  {imagenMostrada ? (
+                    <>
+                      <img
+                        src={imagenMostrada}
+                        alt="Previsualización"
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Overlay con spinner durante upload */}
+                      {subiendoFoto && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <Loader2 className="w-8 h-8 text-white animate-spin" />
+                        </div>
+                      )}
+                      {/* Botón quitar foto */}
+                      {!subiendoFoto && (
+                        <button
+                          type="button"
+                          onClick={handleQuitarFoto}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                          title="Quitar foto"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-gray-400 pointer-events-none">
+                      <ImageIcon className="w-8 h-8" />
+                      <span className="text-xs font-medium">Sin foto</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input de archivo oculto + botón personalizado */}
                 <input
-                  type="url"
-                  value={fotoUrl}
-                  onChange={(e) => setFotoUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  ref={inputArchivoRef}
+                  type="file"
+                  id="foto-lugar-input"
+                  accept="image/jpeg,image/png"
+                  onChange={handleSeleccionarArchivo}
+                  className="hidden"
                 />
+                <button
+                  type="button"
+                  onClick={() => inputArchivoRef.current?.click()}
+                  className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 font-semibold hover:bg-gray-50 hover:border-forest-green hover:text-forest-green transition-all"
+                >
+                  <Upload className="w-4 h-4" />
+                  {archivoSeleccionado
+                    ? `Cambiar foto · ${archivoSeleccionado.name}`
+                    : 'Seleccionar foto (JPG / PNG · máx. 5 MB)'}
+                </button>
               </div>
             </div>
 
-            {/* Right Column Coordinates and Map */}
+            {/* Right Column — Coordenadas y mapa */}
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
@@ -322,21 +448,22 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl text-gray-700 font-semibold text-sm border border-gray-200 hover:bg-gray-100 active:scale-98 transition-all"
+            disabled={cargando || subiendoFoto}
+            className="px-5 py-2.5 rounded-xl text-gray-700 font-semibold text-sm border border-gray-200 hover:bg-gray-100 active:scale-98 transition-all disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={handleSubmit}
-            disabled={cargando}
+            disabled={cargando || subiendoFoto}
             className="flex items-center gap-2 bg-forest-green text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-green-700 active:scale-98 transition-all disabled:opacity-60"
           >
-            {cargando ? (
-              <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            {(cargando || subiendoFoto) ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <Save className="w-4 h-4" />
             )}
-            {lugarId ? 'Guardar Cambios' : 'Crear Lugar'}
+            {subiendoFoto ? 'Subiendo foto...' : cargando ? 'Guardando...' : lugarId ? 'Guardar Cambios' : 'Crear Lugar'}
           </button>
         </div>
       </div>

@@ -32,7 +32,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/chukeles
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/chukeles?allowMultiQueries=true
       - DB_USER=${DB_USER:-chukeles_user}
       - DB_PASSWORD=${DB_PASSWORD:-chukeles_pass}
 

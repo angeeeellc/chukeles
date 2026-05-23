@@ -2,7 +2,7 @@ spring:
   application:
     nombre: chukeles-backend
   datasource:
-    url: jdbc:h2:mem:chukeles;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:file:./data/chukeles;DB_CLOSE_DELAY=-1;MODE=MySQL
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -11,7 +11,7 @@ spring:
       enabled: true
   sql:
     init:
-      mode: always
+      mode: never
   jpa:
     defer-datasource-initialization: true
     hibernate:
@@ -30,11 +30,13 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
-# ── Configuración JWT ──────────────────────────────────────────────────────────
+# ── Configuración JWT y uploads ───────────────────────────────────────────────
 chukeles:
   jwt:
     secreto: chukeles-secreto-super-seguro-para-jwt-minimo-64-caracteres-requeridos-hmac
     expiracion-ms: 86400000  # 24 horas en milisegundos
+  upload:
+    ruta: ./uploads
 
 ---
 spring:
@@ -48,7 +50,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   sql:
     init:
-      mode: always
+      mode: never
   jpa:
     hibernate:
       ddl-auto: update
@@ -56,8 +58,10 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
 
-# ── JWT en producción (sobreescribe el valor por defecto) ─────────────────────
+# ── JWT y uploads en producción ───────────────────────────────────────────────
 chukeles:
   jwt:
     secreto: ${JWT_SECRETO:chukeles-secreto-super-seguro-para-jwt-minimo-64-caracteres-requeridos-hmac}
     expiracion-ms: ${JWT_EXPIRACION_MS:86400000}
+  upload:
+    ruta: ${UPLOAD_RUTA:/app/uploads}
