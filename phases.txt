@@ -1,0 +1,6 @@
+Fase 1: Estructura inicial, base de datos y modelos.
+Fase 2: Mapa interactivo con Leaflet e imágenes de Unsplash.
+Fase 3: Integración de Google Maps, React Router, Zustand y filtro de categorías.
+Fase 4: Sistema de login y panel básico.
+Fase 5: Panel de administración completo, gestión de anuncios, eventos y tablón de anuncios.
+Fase 6: Persistencia de base de datos MySQL (evitando borrados al reiniciar Docker) y visualización de imágenes subidas mediante proxy local y de producción (/uploads).
