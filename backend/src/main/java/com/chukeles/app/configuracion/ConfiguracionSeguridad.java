@@ -52,6 +52,7 @@ public class ConfiguracionSeguridad {
                 .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tablon/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/mercado/**").permitAll()
                 // Fotos subidas: acceso público de lectura
                 .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                 // Swagger / H2 console
@@ -65,9 +66,9 @@ public class ConfiguracionSeguridad {
                 .requestMatchers(HttpMethod.POST,   "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.PUT,    "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/lugares/**").hasAuthority("ROL_ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/tablon/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/mercado/**").hasAuthority("ROL_ADMIN")
                 // ── Todo lo demás requiere autenticación ────────────────────
+                // (incluye POST /api/tablon, DELETE /api/tablon/{id} — la lógica autor/admin está en el servicio)
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())

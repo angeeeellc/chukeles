@@ -63,7 +63,7 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-1">
           <NavLink to="/"       end className={navLinkClass}>Mapa</NavLink>
           <NavLink to="/eventos"     className={navLinkClass}>Eventos</NavLink>
-          <NavLink to="/tablon"      className={navLinkClass}>Tablón</NavLink>
+          <NavLink to="/tablon"      className={navLinkClass}>Anuncios</NavLink>
           <NavLink to="/mercado"     className={navLinkClass}>Tienda</NavLink>
         </div>
 
@@ -129,7 +129,7 @@ const Navbar = () => {
                         shadow-xl z-40 p-4 flex flex-col gap-1 md:hidden">
           <NavLink to="/"       end className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>🗺️ Mapa</NavLink>
           <NavLink to="/eventos"     className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>🐕 Eventos</NavLink>
-          <NavLink to="/tablon"      className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>📋 Tablón</NavLink>
+          <NavLink to="/tablon"      className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>📋 Anuncios</NavLink>
           <NavLink to="/mercado"     className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>🛍️ Tienda</NavLink>
 
           <div className="border-t border-white/10 my-2" />

@@ -1,11 +1,17 @@
 import clienteApi from './clienteApi';
 
+export type TipoPublicacion = 'DUDA' | 'INFO' | 'VENTA';
+
 export interface PublicacionTablon {
   id: number;
   titulo: string;
   contenido: string;
+  tipo: TipoPublicacion;
+  fotoUrl?: string;
   infoContacto?: string;
   creadoEn: string;
+  autorId?: number;
+  autorNombre?: string;
 }
 
 export interface AnuncioMercado {

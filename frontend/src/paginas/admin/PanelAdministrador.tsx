@@ -194,7 +194,7 @@ const DashboardAdmin = () => {
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            Tablón
+            Anuncios
           </button>
           <button 
             onClick={() => { setActiveTab('mercado'); setBusqueda(''); }}
@@ -332,45 +332,58 @@ const DashboardAdmin = () => {
                 </table>
               )}
 
-              {/* TABLÓN TABLE */}
+              {/* ANUNCIOS TABLE */}
               {activeTab === 'tablon' && (
                 <table className="w-full text-left border-collapse min-w-[700px]">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-[10px] font-bold uppercase tracking-wider">
+                      <th className="px-6 py-3.5">Tipo</th>
                       <th className="px-6 py-3.5">Título</th>
                       <th className="px-6 py-3.5">Contenido</th>
-                      <th className="px-6 py-3.5">Contacto</th>
-                      <th className="px-6 py-3.5">Fecha de Creación</th>
+                      <th className="px-6 py-3.5">Autor</th>
+                      <th className="px-6 py-3.5">Fecha</th>
                       <th className="px-6 py-3.5 text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
                     {filtrarPublicaciones.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center py-10 text-gray-400 font-medium">No hay publicaciones en el tablón.</td>
+                        <td colSpan={6} className="text-center py-10 text-gray-400 font-medium">No hay anuncios publicados.</td>
                       </tr>
                     ) : (
-                      filtrarPublicaciones.map(post => (
-                        <tr key={post.id} className="hover:bg-gray-50/50 transition-colors">
-                          <td className="px-6 py-3 font-semibold text-gray-900 max-w-[200px] truncate" title={post.titulo}>{post.titulo}</td>
-                          <td className="px-6 py-3 text-xs text-gray-500 max-w-[300px] truncate" title={post.contenido}>{post.contenido}</td>
-                          <td className="px-6 py-3 text-xs font-semibold">{post.infoContacto || 'Sin datos'}</td>
-                          <td className="px-6 py-3 text-xs text-gray-400">
-                            {new Date(post.creadoEn).toLocaleDateString('es-ES', { 
-                              day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
-                            })}
-                          </td>
-                          <td className="px-6 py-3 text-right">
-                            <button 
-                              onClick={() => handleEliminarPublicacion(post.id, post.titulo)}
-                              className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-                              title="Eliminar publicación"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                      filtrarPublicaciones.map(post => {
+                        const tipoCfg: Record<string, { bg: string; text: string; label: string }> = {
+                          DUDA:  { bg: 'bg-blue-50',   text: 'text-blue-700',   label: '🤔 Duda' },
+                          INFO:  { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'ℹ️ Info' },
+                        };
+                        const cfg = tipoCfg[post.tipo] || { bg: 'bg-gray-50', text: 'text-gray-600', label: post.tipo };
+                        return (
+                          <tr key={post.id} className="hover:bg-gray-50/50 transition-colors">
+                            <td className="px-6 py-3">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${cfg.bg} ${cfg.text}`}>
+                                {cfg.label}
+                              </span>
+                            </td>
+                            <td className="px-6 py-3 font-semibold text-gray-900 max-w-[180px] truncate" title={post.titulo}>{post.titulo}</td>
+                            <td className="px-6 py-3 text-xs text-gray-500 max-w-[240px] truncate" title={post.contenido}>{post.contenido}</td>
+                            <td className="px-6 py-3 text-xs font-semibold">{post.autorNombre || '—'}</td>
+                            <td className="px-6 py-3 text-xs text-gray-400">
+                              {new Date(post.creadoEn).toLocaleDateString('es-ES', { 
+                                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+                              })}
+                            </td>
+                            <td className="px-6 py-3 text-right">
+                              <button 
+                                onClick={() => handleEliminarPublicacion(post.id, post.titulo)}
+                                className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                                title="Eliminar publicación"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
