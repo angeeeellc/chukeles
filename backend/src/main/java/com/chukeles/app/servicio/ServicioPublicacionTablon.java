@@ -66,6 +66,36 @@ public class ServicioPublicacionTablon {
     }
 
     /**
+     * Actualiza una publicación existente. Solo el autor o un administrador.
+     */
+    public PublicacionTablon actualizar(Long id, PeticionPublicacion peticion, String emailSolicitante) {
+        PublicacionTablon pub = repositorioPublicacionTablon.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Publicación no encontrada con id: " + id));
+
+        Usuario solicitante = repositorioUsuario.findByEmail(emailSolicitante)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Usuario no encontrado: " + emailSolicitante));
+
+        boolean esAutor = pub.getUsuario() != null
+                && pub.getUsuario().getId().equals(solicitante.getId());
+        boolean esAdmin = solicitante.getRol() == Rol.ROL_ADMIN;
+
+        if (!esAutor && !esAdmin) {
+            throw new AccessDeniedException(
+                    "No tienes permiso para modificar esta publicación.");
+        }
+
+        pub.setTitulo(peticion.getTitulo());
+        pub.setContenido(peticion.getContenido());
+        pub.setTipo(peticion.getTipo());
+        pub.setFotoUrl(peticion.getFotoUrl());
+        pub.setInfoContacto(peticion.getInfoContacto());
+
+        return repositorioPublicacionTablon.save(pub);
+    }
+
+    /**
      * Elimina una publicación si el solicitante es el autor o un administrador.
      * @param id         id de la publicación
      * @param emailSolicitante email del usuario que pide el borrado

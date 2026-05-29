@@ -41,6 +41,12 @@ export const crearPublicacion = async (datos: NuevaPublicacion): Promise<Publica
   return response.data;
 };
 
+/** Actualiza una publicación (autor o admin) */
+export const actualizarPublicacion = async (id: number, datos: NuevaPublicacion): Promise<PublicacionTablon> => {
+  const response = await clienteApi.put<PublicacionTablon>(`/tablon/${id}`, datos);
+  return response.data;
+};
+
 /** Elimina una publicación por id (autor o admin) */
 export const eliminarPublicacion = async (id: number): Promise<void> => {
   await clienteApi.delete(`/tablon/${id}`);

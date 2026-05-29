@@ -1,11 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { CheckCircle, XCircle, Info, X } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faCircleXmark, faInfoCircle, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useUiStore } from '../estado/estadoUi';
 
 const iconMap = {
-  success: <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />,
-  error:   <XCircle    className="w-5 h-5 text-red-400    shrink-0" />,
-  info:    <Info       className="w-5 h-5 text-blue-400   shrink-0" />,
+  success: <FontAwesomeIcon icon={faCheckCircle} className="w-5 h-5 text-emerald-400 shrink-0" />,
+  error:   <FontAwesomeIcon icon={faCircleXmark} className="w-5 h-5 text-red-400    shrink-0" />,
+  info:    <FontAwesomeIcon icon={faInfoCircle} className="w-5 h-5 text-blue-400   shrink-0" />,
 };
 
 const bgMap = {
@@ -62,7 +63,7 @@ const ToastItem = ({ toast, onRemove }: ToastItemProps) => {
         className="text-white/50 hover:text-white transition-colors ml-1 mt-0.5"
         aria-label="Cerrar"
       >
-        <X className="w-4 h-4" />
+        <FontAwesomeIcon icon={faXmark} className="w-4 h-4" />
       </button>
     </div>
   );

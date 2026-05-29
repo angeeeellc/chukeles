@@ -11,7 +11,8 @@ import NoEncontrado from './paginas/NoEncontrado'
 import ContenedorNotificaciones from './componentes/Notificacion'
 import { useUserStore } from './estado/estadoUsuario'
 import { useUiStore } from './estado/estadoUi'
-import { LogOut, Menu, X } from 'lucide-react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSignOutAlt, faBars, faXmark, faCog, faMap, faDog, faClipboardList, faStore, faHandSparkles } from '@fortawesome/free-solid-svg-icons'
 import { useState } from 'react'
 
 // ── Navbar interno (necesita acceso a useNavigate) ────────────────────────────
@@ -48,7 +49,7 @@ const Navbar = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 cursor-pointer" onClick={() => setMenuMovil(false)}>
           <div className="bg-white p-1.5 rounded-lg shadow-sm">
-            <svg className="w-6 h-6 text-forest-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"
                 d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -74,13 +75,13 @@ const Navbar = () => {
               {user?.role === 'ROL_ADMIN' && (
                 <NavLink
                   to="/admin"
-                  className="mr-1 px-4 py-2 rounded-full text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-all"
+                  className="flex items-center gap-1.5 mr-1 px-4 py-2 rounded-full text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-all"
                 >
-                  ⚙️ Admin
+                  <FontAwesomeIcon icon={faCog} className="w-4 h-4" /> Admin
                 </NavLink>
               )}
-              <span className="text-white/80 text-sm font-medium truncate max-w-32">
-                Hola, {user?.name?.split(' ')[0] || 'Usuario'} 👋
+              <span className="flex items-center gap-1.5 text-white/80 text-sm font-medium truncate max-w-32">
+                Hola, {user?.name?.split(' ')[0] || 'Usuario'} <FontAwesomeIcon icon={faHandSparkles} className="w-4 h-4" />
               </span>
               <button
                 id="navbar-logout"
@@ -88,7 +89,7 @@ const Navbar = () => {
                 className="flex items-center gap-1.5 bg-white/10 text-white/90 hover:bg-white/20
                            px-4 py-2 rounded-full text-sm font-semibold transition-all"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <FontAwesomeIcon icon={faSignOutAlt} className="w-3.5 h-3.5" />
                 Salir
               </button>
             </>
@@ -119,7 +120,7 @@ const Navbar = () => {
           className="md:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
           aria-label="Menú"
         >
-          {menuMovil ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {menuMovil ? <FontAwesomeIcon icon={faXmark} className="w-5 h-5" /> : <FontAwesomeIcon icon={faBars} className="w-5 h-5" />}
         </button>
       </div>
 
@@ -127,10 +128,10 @@ const Navbar = () => {
       {menuMovil && (
         <div className="absolute top-16 left-0 right-0 bg-forest-green border-t border-white/10
                         shadow-xl z-40 p-4 flex flex-col gap-1 md:hidden">
-          <NavLink to="/"       end className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>🗺️ Mapa</NavLink>
-          <NavLink to="/eventos"     className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>🐕 Eventos</NavLink>
-          <NavLink to="/tablon"      className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>📋 Anuncios</NavLink>
-          <NavLink to="/mercado"     className={navLinkMobilClass} onClick={() => setMenuMovil(false)}>🛍️ Tienda</NavLink>
+          <NavLink to="/"       end className={navLinkMobilClass} onClick={() => setMenuMovil(false)}><FontAwesomeIcon icon={faMap} className="inline w-4 h-4 mr-2" />Mapa</NavLink>
+          <NavLink to="/eventos"     className={navLinkMobilClass} onClick={() => setMenuMovil(false)}><FontAwesomeIcon icon={faDog} className="inline w-4 h-4 mr-2" />Eventos</NavLink>
+          <NavLink to="/tablon"      className={navLinkMobilClass} onClick={() => setMenuMovil(false)}><FontAwesomeIcon icon={faClipboardList} className="inline w-4 h-4 mr-2" />Anuncios</NavLink>
+          <NavLink to="/mercado"     className={navLinkMobilClass} onClick={() => setMenuMovil(false)}><FontAwesomeIcon icon={faStore} className="inline w-4 h-4 mr-2" />Tienda</NavLink>
 
           <div className="border-t border-white/10 my-2" />
 
@@ -139,10 +140,10 @@ const Navbar = () => {
               {user?.role === 'ROL_ADMIN' && (
                 <NavLink
                   to="/admin"
-                  className={navLinkMobilClass}
+                  className={`flex items-center gap-2 ${navLinkMobilClass({isActive: false})}`}
                   onClick={() => setMenuMovil(false)}
                 >
-                  ⚙️ Consola Admin
+                  <FontAwesomeIcon icon={faCog} className="w-4 h-4" /> Consola Admin
                 </NavLink>
               )}
               <button
@@ -150,7 +151,7 @@ const Navbar = () => {
                 className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold
                            text-white/80 hover:text-white hover:bg-white/10 transition-all"
               >
-                <LogOut className="w-4 h-4" /> Cerrar sesión
+                <FontAwesomeIcon icon={faSignOutAlt} className="w-4 h-4" /> Cerrar sesión
               </button>
             </>
           ) : (

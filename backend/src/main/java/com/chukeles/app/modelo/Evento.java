@@ -5,7 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "eventos")
@@ -42,4 +45,20 @@ public class Evento {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Usuario usuario;
+
+    @Builder.Default
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "evento_participantes",
+        joinColumns = @JoinColumn(name = "evento_id"),
+        inverseJoinColumns = @JoinColumn(name = "usuario_id")
+    )
+    private Set<Usuario> participantes = new HashSet<>();
+
+    private LocalDateTime creadoEn;
+
+    @PrePersist
+    protected void onCreate() {
+        creadoEn = LocalDateTime.now();
+    }
 }

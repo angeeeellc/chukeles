@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash, faRightToBracket, faPaw } from '@fortawesome/free-solid-svg-icons';
 import { loginApi } from '../../servicios/servicioAutenticacion';
 import { useUserStore } from '../../estado/estadoUsuario';
 import { useUiStore } from '../../estado/estadoUi';
@@ -26,7 +27,7 @@ const IniciarSesion = () => {
     try {
       const resp = await loginApi(email, password);
       login({ id: resp.id, email: resp.email, name: resp.nombre, role: resp.rol }, resp.token);
-      addToast(`¡Bienvenido de vuelta, ${resp.nombre}! 🐾`, 'success');
+      addToast(`¡Bienvenido de vuelta, ${resp.nombre}!`, 'success');
       navigate('/');
     } catch (err: any) {
       const msg = err.response?.status === 401
@@ -46,7 +47,7 @@ const IniciarSesion = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-forest-green rounded-2xl mb-4 shadow-lg">
-              <span className="text-3xl">🐾</span>
+              <FontAwesomeIcon icon={faPaw} className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-black text-gray-900">Acceder a Chukeles</h1>
             <p className="text-sm text-gray-500 mt-1">A Coruña con tu perro</p>
@@ -95,7 +96,7 @@ const IniciarSesion = () => {
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <FontAwesomeIcon icon={faEyeSlash} className="w-4 h-4" /> : <FontAwesomeIcon icon={faEye} className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -112,7 +113,7 @@ const IniciarSesion = () => {
               {cargando ? (
                 <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
               ) : (
-                <LogIn className="w-4 h-4" />
+                <FontAwesomeIcon icon={faRightToBracket} className="w-4 h-4" />
               )}
               {cargando ? 'Accediendo...' : 'Acceder'}
             </button>

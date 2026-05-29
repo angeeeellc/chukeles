@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Save, Upload, ImageIcon, Loader2 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark, faFloppyDisk, faUpload, faImage, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { fetchPlaceById, crearLugarApi, editarLugarApi } from '../../servicios/servicioLugar';
 import { subirFotoLugar } from '../../servicios/servicioFotos';
 import ComponenteMapaAdmin from '../../componentes/ComponenteMapaAdmin';
@@ -12,14 +13,14 @@ interface FormularioLugarProps {
 }
 
 const CATEGORIAS = [
-  { value: 'VETERINARIO',    label: '🏥 Veterinario' },
-  { value: 'PARQUE',         label: '🌳 Parque' },
-  { value: 'PELUQUERIA',     label: '✂️ Peluquería' },
-  { value: 'TIENDA',         label: '🛍️ Tienda' },
-  { value: 'HOTEL',          label: '🏨 Hotel' },
-  { value: 'ADIESTRAMIENTO', label: '🐕 Adiestramiento' },
-  { value: 'PET_FRIENDLY',   label: '🐾 Pet Friendly' },
-  { value: 'OTRO',           label: '📍 Otro' }
+  { value: 'VETERINARIO',    label: 'Veterinario' },
+  { value: 'PARQUE',         label: 'Parque' },
+  { value: 'PELUQUERIA',     label: 'Peluquería' },
+  { value: 'TIENDA',         label: 'Tienda' },
+  { value: 'HOTEL',          label: 'Hotel' },
+  { value: 'ADIESTRAMIENTO', label: 'Adiestramiento' },
+  { value: 'PET_FRIENDLY',   label: 'Pet Friendly' },
+  { value: 'OTRO',           label: 'Otro' }
 ];
 
 const TAMANO_MAXIMO_MB = 5;
@@ -161,11 +162,11 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
       if (lugarId) {
         const actualizado = await editarLugarApi(lugarId, datos);
         idLugar = (actualizado as any).id ?? lugarId;
-        addToast('Datos del lugar actualizados. 🐾', 'success');
+        addToast('Datos del lugar actualizados.', 'success');
       } else {
         const creado = await crearLugarApi(datos);
         idLugar = (creado as any).id;
-        addToast('Lugar creado correctamente. 🎉', 'success');
+        addToast('Lugar creado correctamente.', 'success');
       }
 
       // Si hay un archivo nuevo, subirlo
@@ -174,7 +175,7 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
         try {
           const respuesta = await subirFotoLugar(idLugar, archivoSeleccionado);
           setFotoUrlActual(respuesta.fotoUrl);
-          addToast('Foto subida correctamente. 📸', 'success');
+          addToast('Foto subida correctamente.', 'success');
         } catch (err: any) {
           const mensaje = err?.response?.data?.message || 'No se pudo subir la foto.';
           addToast(mensaje, 'error');
@@ -225,7 +226,7 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
             className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
             aria-label="Cerrar modal"
           >
-            <X className="w-5 h-5" />
+            <FontAwesomeIcon icon={faXmark} className="w-5 h-5" />
           </button>
         </div>
 
@@ -328,7 +329,7 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
                       {/* Overlay con spinner durante upload */}
                       {subiendoFoto && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Loader2 className="w-8 h-8 text-white animate-spin" />
+                          <FontAwesomeIcon icon={faSpinner} className="w-8 h-8 text-white animate-spin" />
                         </div>
                       )}
                       {/* Botón quitar foto */}
@@ -339,13 +340,13 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
                           className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                           title="Quitar foto"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <FontAwesomeIcon icon={faXmark} className="w-3.5 h-3.5" />
                         </button>
                       )}
                     </>
                   ) : (
                     <div className="flex flex-col items-center gap-2 text-gray-400 pointer-events-none">
-                      <ImageIcon className="w-8 h-8" />
+                      <FontAwesomeIcon icon={faImage} className="w-8 h-8" />
                       <span className="text-xs font-medium">Sin foto</span>
                     </div>
                   )}
@@ -365,7 +366,7 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
                   onClick={() => inputArchivoRef.current?.click()}
                   className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 font-semibold hover:bg-gray-50 hover:border-forest-green hover:text-forest-green transition-all"
                 >
-                  <Upload className="w-4 h-4" />
+                  <FontAwesomeIcon icon={faUpload} className="w-4 h-4" />
                   {archivoSeleccionado
                     ? `Cambiar foto · ${archivoSeleccionado.name}`
                     : 'Seleccionar foto (JPG / PNG · máx. 5 MB)'}
@@ -459,9 +460,9 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
             className="flex items-center gap-2 bg-forest-green text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-green-700 active:scale-98 transition-all disabled:opacity-60"
           >
             {(cargando || subiendoFoto) ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 animate-spin" />
             ) : (
-              <Save className="w-4 h-4" />
+              <FontAwesomeIcon icon={faFloppyDisk} className="w-4 h-4" />
             )}
             {subiendoFoto ? 'Subiendo foto...' : cargando ? 'Guardando...' : lugarId ? 'Guardar Cambios' : 'Crear Lugar'}
           </button>

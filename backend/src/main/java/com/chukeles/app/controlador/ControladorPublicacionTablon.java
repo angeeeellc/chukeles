@@ -62,6 +62,18 @@ public class ControladorPublicacionTablon {
                         servicioPublicacionTablon.crear(peticion, email)));
     }
 
+    @Operation(summary = "Actualizar una publicación (autor o admin)",
+               security = @SecurityRequirement(name = "Bearer"))
+    @PutMapping("/{id}")
+    public ResponseEntity<RespuestaPublicacion> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody PeticionPublicacion peticion,
+            Authentication auth) {
+        String email = auth.getName();
+        return ResponseEntity.ok(RespuestaPublicacion.from(
+                servicioPublicacionTablon.actualizar(id, peticion, email)));
+    }
+
     @Operation(summary = "Eliminar una publicación (autor o admin)",
                security = @SecurityRequirement(name = "Bearer"))
     @DeleteMapping("/{id}")

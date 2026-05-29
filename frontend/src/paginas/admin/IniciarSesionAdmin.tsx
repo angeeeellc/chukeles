@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, ShieldAlert, LogIn } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash, faShieldHalved, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
 import { loginApi } from '../../servicios/servicioAutenticacion';
 import { useUserStore } from '../../estado/estadoUsuario';
 import { useUiStore } from '../../estado/estadoUi';
@@ -29,7 +30,7 @@ const IniciarSesionAdmin = () => {
       
       // Validación estricta del rol de administrador
       if (resp.rol !== 'ROL_ADMIN') {
-        addToast('Acceso denegado. No tienes permisos de administrador. 🛑', 'error');
+        addToast('Acceso denegado. No tienes permisos de administrador.', 'error');
         setCargando(false);
         return;
       }
@@ -41,7 +42,7 @@ const IniciarSesionAdmin = () => {
         rememberMe
       );
 
-      addToast(`¡Acceso concedido! Bienvenido al panel de administración, ${resp.nombre}. 🛡️`, 'success');
+      addToast(`¡Acceso concedido! Bienvenido al panel de administración, ${resp.nombre}.`, 'success');
       navigate('/admin/dashboard');
     } catch (err: any) {
       const msg = err.response?.status === 401
@@ -61,7 +62,7 @@ const IniciarSesionAdmin = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-2xl mb-4 shadow-lg shadow-emerald-900/50">
-              <ShieldAlert className="w-8 h-8 text-white" />
+              <FontAwesomeIcon icon={faShieldHalved} className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-black tracking-tight">Panel Administrativo</h1>
             <p className="text-sm text-emerald-200/60 mt-1 font-medium">Chukeles — Solo personal autorizado</p>
@@ -110,7 +111,7 @@ const IniciarSesionAdmin = () => {
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <FontAwesomeIcon icon={faEyeSlash} className="w-4 h-4" /> : <FontAwesomeIcon icon={faEye} className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -143,7 +144,7 @@ const IniciarSesionAdmin = () => {
               {cargando ? (
                 <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
               ) : (
-                <LogIn className="w-4 h-4" />
+                <FontAwesomeIcon icon={faRightToBracket} className="w-4 h-4" />
               )}
               {cargando ? 'Accediendo de forma segura...' : 'Iniciar Sesión Segura'}
             </button>

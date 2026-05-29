@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  Trash2, Edit, Plus, Search, LogOut, MapPin, 
-  FileText, ShoppingBag, Calendar, ShieldCheck, RefreshCw 
-} from 'lucide-react';
+  faTrash, faEdit, faPlus, faMagnifyingGlass, faRightFromBracket, faLocationDot, 
+  faFileLines, faShoppingBag, faCalendarAlt, faShieldHalved, faRotateRight,
+  faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faLocationArrow, faCircleQuestion, faInfoCircle
+} from '@fortawesome/free-solid-svg-icons';
 import { useUserStore } from '../../estado/estadoUsuario';
 import { useUiStore } from '../../estado/estadoUi';
 
@@ -143,9 +145,14 @@ const DashboardAdmin = () => {
   );
 
   const traducirCategoria = (cat: string) => {
-    const map: Record<string, string> = {
-      'VET': '🏥 Veterinario', 'PARK': '🌳 Parque', 'GROOMING': '✂️ Peluquería',
-      'STORE': '🛍️ Tienda', 'HOTEL': '🏨 Hotel', 'TRAINING': '🐕 Adiestramiento', 'OTHER': '📍 Otro'
+    const map: Record<string, React.ReactNode> = {
+      'VET': <><FontAwesomeIcon icon={faHospital} className="w-3.5 h-3.5 inline mr-1" /> Veterinario</>,
+      'PARK': <><FontAwesomeIcon icon={faTree} className="w-3.5 h-3.5 inline mr-1" /> Parque</>,
+      'GROOMING': <><FontAwesomeIcon icon={faScissors} className="w-3.5 h-3.5 inline mr-1" /> Peluquería</>,
+      'STORE': <><FontAwesomeIcon icon={faStore} className="w-3.5 h-3.5 inline mr-1" /> Tienda</>,
+      'HOTEL': <><FontAwesomeIcon icon={faBuilding} className="w-3.5 h-3.5 inline mr-1" /> Hotel</>,
+      'TRAINING': <><FontAwesomeIcon icon={faGraduationCap} className="w-3.5 h-3.5 inline mr-1" /> Adiestramiento</>,
+      'OTHER': <><FontAwesomeIcon icon={faLocationArrow} className="w-3.5 h-3.5 inline mr-1" /> Otro</>
     };
     return map[cat.toUpperCase()] || cat;
   };
@@ -156,7 +163,7 @@ const DashboardAdmin = () => {
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="bg-forest-green text-white p-2 rounded-xl">
-            <ShieldCheck className="w-5 h-5" />
+            <FontAwesomeIcon icon={faShieldHalved} className="w-5 h-5" />
           </div>
           <div>
             <h1 className="text-xl font-black text-gray-900 tracking-tight leading-none">Consola de Control</h1>
@@ -169,7 +176,7 @@ const DashboardAdmin = () => {
           className="flex items-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700
                      px-4 py-2 rounded-xl text-xs font-bold transition-all border border-red-100"
         >
-          <LogOut className="w-4 h-4" />
+          <FontAwesomeIcon icon={faRightFromBracket} className="w-4 h-4" />
           Salir de Consola
         </button>
       </header>
@@ -184,7 +191,7 @@ const DashboardAdmin = () => {
               activeTab === 'lugares' ? 'bg-white text-forest-green shadow-sm' : 'text-gray-500 hover:text-gray-900'
             }`}
           >
-            <MapPin className="w-3.5 h-3.5" />
+            <FontAwesomeIcon icon={faLocationDot} className="w-3.5 h-3.5" />
             Lugares
           </button>
           <button 
@@ -193,7 +200,7 @@ const DashboardAdmin = () => {
               activeTab === 'tablon' ? 'bg-white text-forest-green shadow-sm' : 'text-gray-500 hover:text-gray-900'
             }`}
           >
-            <FileText className="w-3.5 h-3.5" />
+            <FontAwesomeIcon icon={faFileLines} className="w-3.5 h-3.5" />
             Anuncios
           </button>
           <button 
@@ -202,7 +209,7 @@ const DashboardAdmin = () => {
               activeTab === 'mercado' ? 'bg-white text-forest-green shadow-sm' : 'text-gray-500 hover:text-gray-900'
             }`}
           >
-            <ShoppingBag className="w-3.5 h-3.5" />
+            <FontAwesomeIcon icon={faShoppingBag} className="w-3.5 h-3.5" />
             Tienda
           </button>
           <button 
@@ -211,7 +218,7 @@ const DashboardAdmin = () => {
               activeTab === 'eventos' ? 'bg-white text-forest-green shadow-sm' : 'text-gray-500 hover:text-gray-900'
             }`}
           >
-            <Calendar className="w-3.5 h-3.5" />
+            <FontAwesomeIcon icon={faCalendarAlt} className="w-3.5 h-3.5" />
             Quedadas
           </button>
         </div>
@@ -227,7 +234,7 @@ const DashboardAdmin = () => {
               placeholder={`Buscar en ${activeTab}...`}
               className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           </div>
 
           {/* Refresh button */}
@@ -237,7 +244,7 @@ const DashboardAdmin = () => {
             className="p-2 border border-gray-200 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors"
             title="Recargar datos"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${cargando ? 'animate-spin' : ''}`} />
+            <FontAwesomeIcon icon={faRotateRight} className={`w-3.5 h-3.5 ${cargando ? 'animate-spin' : ''}`} />
           </button>
 
           {/* New Lugar Button */}
@@ -247,7 +254,7 @@ const DashboardAdmin = () => {
               className="flex items-center gap-1.5 bg-forest-green text-white hover:bg-green-700
                          px-4 py-2 rounded-xl text-xs font-bold shadow-md shadow-green-950/20 active:scale-98 transition-all shrink-0"
             >
-              <Plus className="w-4 h-4" />
+              <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
               Nuevo Lugar
             </button>
           )}
@@ -314,14 +321,14 @@ const DashboardAdmin = () => {
                                 className="p-1.5 rounded-lg text-forest-green hover:bg-green-50 transition-colors"
                                 title="Editar"
                               >
-                                <Edit className="w-4 h-4" />
+                                <FontAwesomeIcon icon={faEdit} className="w-4 h-4" />
                               </button>
                               <button 
                                 onClick={() => handleEliminarLugar(lugar.id, lugar.nombre)}
                                 className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                                 title="Eliminar"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
                               </button>
                             </div>
                           </td>
@@ -352,9 +359,9 @@ const DashboardAdmin = () => {
                       </tr>
                     ) : (
                       filtrarPublicaciones.map(post => {
-                        const tipoCfg: Record<string, { bg: string; text: string; label: string }> = {
-                          DUDA:  { bg: 'bg-blue-50',   text: 'text-blue-700',   label: '🤔 Duda' },
-                          INFO:  { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'ℹ️ Info' },
+                        const tipoCfg: Record<string, { bg: string; text: string; label: React.ReactNode }> = {
+                          DUDA:  { bg: 'bg-blue-50',   text: 'text-blue-700',   label: <><FontAwesomeIcon icon={faCircleQuestion} className="w-3 h-3 inline mr-1" /> Duda</> },
+                          INFO:  { bg: 'bg-emerald-50', text: 'text-emerald-700', label: <><FontAwesomeIcon icon={faInfoCircle} className="w-3 h-3 inline mr-1" /> Info</> },
                         };
                         const cfg = tipoCfg[post.tipo] || { bg: 'bg-gray-50', text: 'text-gray-600', label: post.tipo };
                         return (
@@ -378,7 +385,7 @@ const DashboardAdmin = () => {
                                 className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                                 title="Eliminar publicación"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
                               </button>
                             </td>
                           </tr>
@@ -438,7 +445,7 @@ const DashboardAdmin = () => {
                               className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                               title="Eliminar producto"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
                             </button>
                           </td>
                         </tr>
@@ -484,7 +491,7 @@ const DashboardAdmin = () => {
                               className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                               title="Eliminar quedada"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
                             </button>
                           </td>
                         </tr>

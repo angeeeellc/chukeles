@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.util.Map;
 
 /**
@@ -62,5 +63,30 @@ public class ControladorFotos {
 
         // 3. Devolver la URL para que el frontend pueda mostrar la imagen
         return ResponseEntity.ok(Map.of("fotoUrl", lugar.getFotoUrl()));
+    }
+
+    /**
+     * Sube una foto de manera genérica para ser usada por un usuario en anuncios o eventos.
+     * Accesible por cualquier usuario autenticado.
+     *
+     * @param archivo Fichero JPG o PNG, máximo 5 MB
+     * @param principal El usuario autenticado
+     * @return JSON con la URL pública de la foto: { "url": "/uploads/..." }
+     */
+    @Operation(
+        summary = "Subir foto genérica (autenticado)",
+        security = @SecurityRequirement(name = "Bearer")
+    )
+    @PostMapping(
+        value = "/subir",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<Map<String, String>> subirFotoGenerica(
+            @RequestParam("file") MultipartFile archivo,
+            Principal principal
+    ) {
+        // Usamos ID 0L para fotos sueltas que luego el usuario asociará a la entidad al crearla
+        String fotoUrl = servicioFotos.guardar(archivo, "general", 0L);
+        return ResponseEntity.ok(Map.of("url", fotoUrl));
     }
 }

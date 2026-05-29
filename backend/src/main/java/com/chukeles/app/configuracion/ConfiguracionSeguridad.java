@@ -45,6 +45,11 @@ public class ConfiguracionSeguridad {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> 
+                    response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage())
+                )
+            )
             .authorizeHttpRequests(auth -> auth
                 // ── Rutas públicas ──────────────────────────────────────────
                 .requestMatchers("/api/auth/**").permitAll()
@@ -66,9 +71,9 @@ public class ConfiguracionSeguridad {
                 .requestMatchers(HttpMethod.POST,   "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.PUT,    "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/lugares/**").hasAuthority("ROL_ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/mercado/**").hasAuthority("ROL_ADMIN")
                 // ── Todo lo demás requiere autenticación ────────────────────
-                // (incluye POST /api/tablon, DELETE /api/tablon/{id} — la lógica autor/admin está en el servicio)
+                // DELETE /api/mercado, DELETE /api/eventos, POST /api/eventos/{id}/unirse:
+                // el control de autor vs. admin se delega al servicio correspondiente
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())

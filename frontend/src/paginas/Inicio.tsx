@@ -2,19 +2,20 @@ import { useEffect, useState, useRef, useMemo } from 'react'
 import { useLugarStore } from '../estado/estadoLugar'
 import type { Lugar } from '../servicios/servicioLugar'
 import ComponenteMapa from '../componentes/ComponenteMapa'
-import { Search, MapPin, X } from 'lucide-react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faMagnifyingGlass, faLocationDot, faXmark, faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faMugHot, faPaw } from '@fortawesome/free-solid-svg-icons'
 import { useDebounce } from '../ganchos/useDebounce'
 import { useNavigate } from 'react-router-dom'
 
 // ── Categorías disponibles ────────────────────────────────────────────────────
 const CATEGORIAS = [
-  { valor: 'VETERINARIO', etiqueta: 'Veterinarios',    emoji: '🏥' },
-  { valor: 'PARQUE',      etiqueta: 'Parques',         emoji: '🌳' },
-  { valor: 'PELUQUERIA',  etiqueta: 'Peluquerías',     emoji: '✂️' },
-  { valor: 'TIENDA',      etiqueta: 'Tiendas',         emoji: '🛍️' },
-  { valor: 'HOTEL',       etiqueta: 'Hoteles',         emoji: '🏨' },
-  { valor: 'ADIESTRAMIENTO', etiqueta: 'Adiest.',      emoji: '🎓' },
-  { valor: 'PET_FRIENDLY', etiqueta: 'Pet Friendly',   emoji: '☕' },
+  { valor: 'VETERINARIO', etiqueta: 'Veterinarios',    icon: faHospital },
+  { valor: 'PARQUE',      etiqueta: 'Parques',         icon: faTree },
+  { valor: 'PELUQUERIA',  etiqueta: 'Peluquerías',     icon: faScissors },
+  { valor: 'TIENDA',      etiqueta: 'Tiendas',         icon: faStore },
+  { valor: 'HOTEL',       etiqueta: 'Hoteles',         icon: faBuilding },
+  { valor: 'ADIESTRAMIENTO', etiqueta: 'Adiest.',      icon: faGraduationCap },
+  { valor: 'PET_FRIENDLY', etiqueta: 'Pet Friendly',   icon: faMugHot },
 ]
 
 // ── Skeleton de tarjeta ───────────────────────────────────────────────────────
@@ -122,7 +123,7 @@ const Inicio = () => {
 
           {/* Buscador */}
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
               id="home-search-input"
               type="text"
@@ -139,7 +140,7 @@ const Inicio = () => {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 aria-label="Limpiar búsqueda"
               >
-                <X className="w-4 h-4" />
+                <FontAwesomeIcon icon={faXmark} className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -147,7 +148,7 @@ const Inicio = () => {
 
         {/* Chips de categoría (horizontal scroll) */}
         <div className="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide">
-          {CATEGORIAS.map(({ valor, etiqueta, emoji }) => {
+          {CATEGORIAS.map(({ valor, etiqueta, icon: Icon }) => {
             const activa = categoriasActivas.includes(valor)
             return (
               <button
@@ -161,7 +162,7 @@ const Inicio = () => {
                     : 'bg-white text-gray-600 border-gray-200 hover:border-forest-green hover:text-forest-green'
                 }`}
               >
-                <span>{emoji}</span>
+                <span><FontAwesomeIcon icon={Icon} className="w-3.5 h-3.5" /></span>
                 {etiqueta}
               </button>
             )
@@ -193,7 +194,7 @@ const Inicio = () => {
                 onClick={limpiarTodo}
                 className="flex items-center gap-1 text-xs text-forest-green font-semibold hover:underline"
               >
-                <X className="w-3 h-3" />
+                <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
                 Limpiar filtros
               </button>
             )}
@@ -209,7 +210,7 @@ const Inicio = () => {
           {/* Empty state */}
           {!cargando && lugaresMostrar.length === 0 && (
             <div className="flex flex-col items-center justify-center flex-1 gap-3 p-8 text-center">
-              <span className="text-5xl">🐾</span>
+              <FontAwesomeIcon icon={faPaw} className="w-16 h-16 text-forest-green mb-2" />
               <p className="text-sm font-bold text-gray-700">Sin resultados</p>
               <p className="text-xs text-gray-400 leading-relaxed">
                 No encontramos lugares con estos filtros
@@ -264,7 +265,7 @@ const Inicio = () => {
                     </p>
                     <div className="flex items-center justify-between pt-3 border-t border-gray-50">
                       <div className="flex items-center text-[11px] text-gray-400 overflow-hidden w-2/3">
-                        <MapPin className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                        <FontAwesomeIcon icon={faLocationDot} className="w-3.5 h-3.5 mr-1.5 shrink-0" />
                         <span className="truncate">{lugar.direccion}</span>
                       </div>
                       <button

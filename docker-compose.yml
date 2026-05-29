@@ -37,13 +37,14 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-chukeles_pass}
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:8080}
     container_name: chukeles-frontend
     restart: on-failure
     ports:
       - "5173:80"
-    environment:
-      - VITE_API_URL=http://localhost:8080
 
 volumes:
   mysql_data:

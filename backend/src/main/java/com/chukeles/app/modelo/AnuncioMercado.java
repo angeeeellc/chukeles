@@ -36,6 +36,8 @@ public class AnuncioMercado {
     @Builder.Default
     private String estado = "DISPONIBLE"; // DISPONIBLE, VENDIDO
 
+    private String infoContacto;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Usuario usuario;

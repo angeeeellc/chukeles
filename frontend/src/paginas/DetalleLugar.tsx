@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchPlaceById, type Lugar } from '../servicios/servicioLugar';
-import { MapPin, Phone, Globe, ArrowLeft, Navigation } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLocationDot, faPhone, faGlobe, faArrowLeft, faLocationArrow, faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faMugHot, faPaw } from '@fortawesome/free-solid-svg-icons';
 
-const CATEGORIA_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
-  VETERINARIO: { label: 'Veterinario',    emoji: '🏥', color: 'bg-red-100 text-red-700' },
-  VET:         { label: 'Veterinario',    emoji: '🏥', color: 'bg-red-100 text-red-700' },
-  PARQUE:      { label: 'Parque',         emoji: '🌳', color: 'bg-green-100 text-green-700' },
-  PARK:        { label: 'Parque',         emoji: '🌳', color: 'bg-green-100 text-green-700' },
-  PELUQUERIA:  { label: 'Peluquería',     emoji: '✂️', color: 'bg-purple-100 text-purple-700' },
-  GROOMING:    { label: 'Peluquería',     emoji: '✂️', color: 'bg-purple-100 text-purple-700' },
-  TIENDA:      { label: 'Tienda',         emoji: '🛍️', color: 'bg-orange-100 text-orange-700' },
-  STORE:       { label: 'Tienda',         emoji: '🛍️', color: 'bg-orange-100 text-orange-700' },
-  HOTEL:       { label: 'Hotel',          emoji: '🏨', color: 'bg-blue-100 text-blue-700' },
-  ADIESTRAMIENTO: { label: 'Adiestramiento', emoji: '🎓', color: 'bg-yellow-100 text-yellow-700' },
-  TRAINING:    { label: 'Adiestramiento', emoji: '🎓', color: 'bg-yellow-100 text-yellow-700' },
-  PET_FRIENDLY:{ label: 'Pet Friendly',   emoji: '☕', color: 'bg-teal-100 text-teal-700' },
-  OTHER:       { label: 'Otro',           emoji: '🐾', color: 'bg-gray-100 text-gray-700' },
+const CATEGORIA_LABELS: Record<string, { label: string; icon: any; color: string }> = {
+  VETERINARIO: { label: 'Veterinario',    icon: faHospital, color: 'bg-red-100 text-red-700' },
+  VET:         { label: 'Veterinario',    icon: faHospital, color: 'bg-red-100 text-red-700' },
+  PARQUE:      { label: 'Parque',         icon: faTree, color: 'bg-green-100 text-green-700' },
+  PARK:        { label: 'Parque',         icon: faTree, color: 'bg-green-100 text-green-700' },
+  PELUQUERIA:  { label: 'Peluquería',     icon: faScissors, color: 'bg-purple-100 text-purple-700' },
+  GROOMING:    { label: 'Peluquería',     icon: faScissors, color: 'bg-purple-100 text-purple-700' },
+  TIENDA:      { label: 'Tienda',         icon: faStore, color: 'bg-orange-100 text-orange-700' },
+  STORE:       { label: 'Tienda',         icon: faStore, color: 'bg-orange-100 text-orange-700' },
+  HOTEL:       { label: 'Hotel',          icon: faBuilding, color: 'bg-blue-100 text-blue-700' },
+  ADIESTRAMIENTO: { label: 'Adiestramiento', icon: faGraduationCap, color: 'bg-yellow-100 text-yellow-700' },
+  TRAINING:    { label: 'Adiestramiento', icon: faGraduationCap, color: 'bg-yellow-100 text-yellow-700' },
+  PET_FRIENDLY:{ label: 'Pet Friendly',   icon: faMugHot, color: 'bg-teal-100 text-teal-700' },
+  OTHER:       { label: 'Otro',           icon: faPaw, color: 'bg-gray-100 text-gray-700' },
 };
 
 const DetalleLugarSkeleton = () => (
@@ -62,7 +63,7 @@ const DetalleLugar = () => {
   if (!lugar) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 p-8 text-center">
-        <span className="text-5xl mb-4">🐾</span>
+        <FontAwesomeIcon icon={faPaw} className="w-16 h-16 text-forest-green mb-4" />
         <h2 className="text-xl font-bold text-gray-800 mb-2">Lugar no encontrado</h2>
         <p className="text-gray-500 text-sm mb-6">El lugar que buscas no existe o ha sido eliminado.</p>
         <Link
@@ -88,7 +89,7 @@ const DetalleLugar = () => {
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-forest-green transition-colors mb-5 group"
         >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Volver
         </button>
 
@@ -106,7 +107,7 @@ const DetalleLugar = () => {
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <span className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full mb-2 ${cat.color}`}>
-              {cat.emoji} {cat.label}
+              <FontAwesomeIcon icon={cat.icon} className="w-3.5 h-3.5" /> {cat.label}
             </span>
             <h1 className="text-2xl font-black text-gray-900 leading-tight">{lugar.nombre}</h1>
           </div>
@@ -122,7 +123,7 @@ const DetalleLugar = () => {
         {/* Info cards */}
         <div className="flex flex-col gap-3 mb-6">
           <div className="flex items-start gap-3 bg-white rounded-2xl px-4 py-3 border border-gray-100 shadow-sm">
-            <MapPin className="w-4 h-4 text-forest-green mt-0.5 shrink-0" />
+            <FontAwesomeIcon icon={faLocationDot} className="w-4 h-4 text-forest-green mt-0.5 shrink-0" />
             <span className="text-sm text-gray-700">{lugar.direccion}</span>
           </div>
 
@@ -132,7 +133,7 @@ const DetalleLugar = () => {
               className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3 border border-gray-100 shadow-sm
                          hover:border-forest-green/30 hover:bg-green-50/50 transition-all"
             >
-              <Phone className="w-4 h-4 text-forest-green shrink-0" />
+              <FontAwesomeIcon icon={faPhone} className="w-4 h-4 text-forest-green shrink-0" />
               <span className="text-sm text-gray-700">{lugar.telefono}</span>
             </a>
           )}
@@ -145,7 +146,7 @@ const DetalleLugar = () => {
               className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3 border border-gray-100 shadow-sm
                          hover:border-forest-green/30 hover:bg-green-50/50 transition-all"
             >
-              <Globe className="w-4 h-4 text-forest-green shrink-0" />
+              <FontAwesomeIcon icon={faGlobe} className="w-4 h-4 text-forest-green shrink-0" />
               <span className="text-sm text-forest-green truncate">{lugar.sitioWeb}</span>
             </a>
           )}
@@ -161,7 +162,7 @@ const DetalleLugar = () => {
                      py-4 rounded-2xl font-bold text-sm shadow-lg
                      hover:bg-green-700 active:scale-[0.98] transition-all duration-200"
         >
-          <Navigation className="w-4 h-4" />
+          <FontAwesomeIcon icon={faLocationArrow} className="w-4 h-4" />
           ¿Cómo llegar?
         </a>
       </div>

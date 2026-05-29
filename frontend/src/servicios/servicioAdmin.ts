@@ -22,6 +22,9 @@ export interface AnuncioMercado {
   fotoUrl?: string;
   categoria: string;
   estado: string;
+  infoContacto?: string;
+  autorId?: number;
+  autorNombre?: string;
   creadoEn: string;
 }
 
@@ -31,10 +34,15 @@ export interface Evento {
   fecha: string;
   hora: string;
   ubicacion: string;
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
   maxParticipantes?: number;
-  descripcion: string;
+  descripcion?: string;
+  autorId?: number;
+  autorNombre?: string;
+  numParticipantes: number;
+  estaApuntado: boolean;
+  creadoEn: string;
 }
 
 // ── Endpoints del Tablón ──────────────────────────────────────────────────────

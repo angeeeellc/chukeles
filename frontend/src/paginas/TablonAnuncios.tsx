@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  MessageCircleQuestion, Info, Plus, Trash2,
-  X, Upload, ImageIcon, Phone, AlignLeft, Type,
-  Loader2, RefreshCw
-} from 'lucide-react';
+  faCircleQuestion, faInfoCircle, faPlus, faTrash,
+  faXmark, faUpload, faImage, faPhone, faAlignLeft, faFont,
+  faSpinner, faRotateRight, faClipboardList, faGrip
+} from '@fortawesome/free-solid-svg-icons';
 import { useUserStore } from '../estado/estadoUsuario';
 import { useUiStore } from '../estado/estadoUi';
 import {
-  fetchPublicaciones, crearPublicacion, eliminarPublicacion,
+  fetchPublicaciones, crearPublicacion, actualizarPublicacion, eliminarPublicacion,
   type PublicacionTablon, type TipoPublicacion, type NuevaPublicacion
 } from '../servicios/servicioTablon';
+import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import clienteApi from '../servicios/clienteApi';
 
 // ── Utilidades ─────────────────────────────────────────────────────────────────
@@ -32,14 +34,14 @@ const tiempoRelativo = (fechaStr: string): string => {
 const TIPO_CONFIG: Record<TipoPublicacion, { label: string; icon: React.ReactNode; bg: string; text: string; border: string }> = {
   DUDA: {
     label: 'Duda',
-    icon: <MessageCircleQuestion className="w-3.5 h-3.5" />,
+    icon: <FontAwesomeIcon icon={faCircleQuestion} className="w-3.5 h-3.5" />,
     bg: 'bg-blue-50',
     text: 'text-blue-700',
     border: 'border-blue-200',
   },
   INFO: {
     label: 'Info',
-    icon: <Info className="w-3.5 h-3.5" />,
+    icon: <FontAwesomeIcon icon={faInfoCircle} className="w-3.5 h-3.5" />,
     bg: 'bg-emerald-50',
     text: 'text-emerald-700',
     border: 'border-emerald-200',
@@ -65,13 +67,19 @@ interface TarjetaProps {
   usuarioId?: number;
   esAdmin: boolean;
   onEliminar: (id: number, titulo: string) => void;
+  onVerDetalle: (pub: PublicacionTablon) => void;
+  onEditar: (pub: PublicacionTablon) => void;
 }
 
-const TarjetaAnuncio = ({ pub, usuarioId, esAdmin, onEliminar }: TarjetaProps) => {
-  const puedeEliminar = esAdmin || pub.autorId === usuarioId;
+const TarjetaAnuncio = ({ pub, usuarioId, esAdmin, onEliminar, onVerDetalle, onEditar }: TarjetaProps) => {
+  const esAutor = pub.autorId === usuarioId;
+  const puedeEliminar = esAdmin || esAutor;
 
   return (
-    <article className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+    <article
+      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer"
+      onClick={() => onVerDetalle(pub)}
+    >
       {/* Foto si existe */}
       {pub.fotoUrl && (
         <div className="h-48 overflow-hidden">
@@ -96,11 +104,11 @@ const TarjetaAnuncio = ({ pub, usuarioId, esAdmin, onEliminar }: TarjetaProps) =
         {/* Título */}
         <h2 className="font-bold text-gray-900 text-base mb-2 leading-snug">{pub.titulo}</h2>
 
-        {/* Contenido */}
+        {/* Contenido — recortado, ver más en modal */}
         <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">{pub.contenido}</p>
 
         {/* Footer: autor + contacto + acción */}
-        <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between gap-3">
+        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
           <div className="min-w-0">
             {pub.autorNombre && (
               <p className="text-xs font-semibold text-gray-700 truncate">
@@ -109,21 +117,32 @@ const TarjetaAnuncio = ({ pub, usuarioId, esAdmin, onEliminar }: TarjetaProps) =
             )}
             {pub.infoContacto && (
               <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5 truncate">
-                <Phone className="w-3 h-3 shrink-0" />
+                <FontAwesomeIcon icon={faPhone} className="w-3 h-3 shrink-0" />
                 {pub.infoContacto}
               </p>
             )}
           </div>
 
-          {puedeEliminar && (
+          <div className="flex gap-2">
+            {esAutor && (
+              <button
+                onClick={(ev) => { ev.stopPropagation(); onEditar(pub); }}
+                title="Editar publicación"
+                className="shrink-0 p-1.5 rounded-lg text-amber-500 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+              >
+                <FontAwesomeIcon icon={faPenToSquare} className="w-4 h-4" />
+              </button>
+            )}
+            {puedeEliminar && (
             <button
-              onClick={() => onEliminar(pub.id, pub.titulo)}
+              onClick={(ev) => { ev.stopPropagation(); onEliminar(pub.id, pub.titulo); }}
               title="Eliminar publicación"
               className="shrink-0 p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
             >
-              <Trash2 className="w-4 h-4" />
+              <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
             </button>
           )}
+          </div>
         </div>
       </div>
     </article>
@@ -133,22 +152,23 @@ const TarjetaAnuncio = ({ pub, usuarioId, esAdmin, onEliminar }: TarjetaProps) =
 // ── Modal de nueva publicación ─────────────────────────────────────────────────
 
 interface ModalPublicarProps {
+  publicacionEditar?: PublicacionTablon | null;
   onClose: () => void;
   onPublicado: () => void;
 }
 
-const ModalPublicar = ({ onClose, onPublicado }: ModalPublicarProps) => {
+const ModalPublicar = ({ publicacionEditar, onClose, onPublicado }: ModalPublicarProps) => {
   const { addToast } = useUiStore();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<NuevaPublicacion>({
-    titulo: '',
-    contenido: '',
-    tipo: 'INFO',
-    fotoUrl: '',
-    infoContacto: '',
+    titulo: publicacionEditar?.titulo || '',
+    contenido: publicacionEditar?.contenido || '',
+    tipo: publicacionEditar?.tipo || 'INFO',
+    fotoUrl: publicacionEditar?.fotoUrl || '',
+    infoContacto: publicacionEditar?.infoContacto || '',
   });
-  const [previewFoto, setPreviewFoto] = useState<string | null>(null);
+  const [previewFoto, setPreviewFoto] = useState<string | null>(publicacionEditar?.fotoUrl || null);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
@@ -186,14 +206,17 @@ const ModalPublicar = ({ onClose, onPublicado }: ModalPublicarProps) => {
 
     setEnviando(true);
     try {
-      const datos: NuevaPublicacion = {
-        ...form,
-      };
-      await crearPublicacion(datos);
-      addToast('¡Anuncio publicado correctamente!', 'success');
+      const datos: NuevaPublicacion = { ...form };
+      if (publicacionEditar) {
+        await actualizarPublicacion(publicacionEditar.id, datos);
+        addToast('¡Anuncio actualizado correctamente!', 'success');
+      } else {
+        await crearPublicacion(datos);
+        addToast('¡Anuncio publicado correctamente!', 'success');
+      }
       onPublicado();
     } catch {
-      addToast('No se pudo publicar el anuncio. Inténtalo de nuevo.', 'error');
+      addToast(publicacionEditar ? 'No se pudo actualizar el anuncio. Inténtalo de nuevo.' : 'No se pudo publicar el anuncio. Inténtalo de nuevo.', 'error');
     } finally {
       setEnviando(false);
     }
@@ -208,9 +231,11 @@ const ModalPublicar = ({ onClose, onPublicado }: ModalPublicarProps) => {
       <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Cabecera */}
         <div className="flex items-center justify-between p-4 pb-3 border-b border-gray-100">
-          <h2 className="text-lg font-black text-gray-900">Publicar anuncio</h2>
+          <h2 className="text-lg font-black text-gray-900">
+            {publicacionEditar ? 'Editar anuncio' : 'Publicar anuncio'}
+          </h2>
           <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
-            <X className="w-5 h-5" />
+            <FontAwesomeIcon icon={faXmark} className="w-5 h-5" />
           </button>
         </div>
 
@@ -232,10 +257,10 @@ const ModalPublicar = ({ onClose, onPublicado }: ModalPublicarProps) => {
                     className={`flex flex-col items-center gap-1.5 py-2 px-2 rounded-xl border-2 text-xs font-bold transition-all ${
                       activo
                         ? `${cfg.bg} ${cfg.text} ${cfg.border} shadow-sm`
-                        : 'border-gray-100 text-gray-400 hover:border-gray-200'
+                        : 'border-gray-100 text-gray-400 hover:border-gray-100'
                     }`}
                   >
-                    <span className={activo ? cfg.text : 'text-gray-300'}>{cfg.icon}</span>
+                    <span className={activo ? cfg.text : 'text-gray-400'}>{cfg.icon}</span>
                     {cfg.label}
                   </button>
                 );
@@ -246,14 +271,14 @@ const ModalPublicar = ({ onClose, onPublicado }: ModalPublicarProps) => {
           {/* Título */}
           <div>
             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <Type className="w-3.5 h-3.5" /> Título *
+              <FontAwesomeIcon icon={faFont} className="w-3.5 h-3.5" /> Título *
             </label>
             <input
               type="text"
               value={form.titulo}
               onChange={e => handleCampoTexto('titulo', e.target.value)}
               placeholder="Ej: Busco veterinario para gato de 10 años..."
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
+              className="w-full px-3 py-2 rounded-xl border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
               maxLength={120}
             />
           </div>
@@ -261,45 +286,45 @@ const ModalPublicar = ({ onClose, onPublicado }: ModalPublicarProps) => {
           {/* Contenido */}
           <div>
             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <AlignLeft className="w-3.5 h-3.5" /> Descripción *
+              <FontAwesomeIcon icon={faAlignLeft} className="w-3.5 h-3.5" /> Descripción *
             </label>
             <textarea
               value={form.contenido}
               onChange={e => handleCampoTexto('contenido', e.target.value)}
               placeholder="Explica tu anuncio con detalle..."
               rows={3}
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent resize-none"
+              className="w-full px-3 py-2 rounded-xl border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent resize-none"
             />
           </div>
 
           {/* Info de contacto */}
           <div>
             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5" /> Contacto (opcional)
+              <FontAwesomeIcon icon={faPhone} className="w-3.5 h-3.5" /> Contacto (opcional)
             </label>
             <input
               type="text"
               value={form.infoContacto ?? ''}
               onChange={e => handleCampoTexto('infoContacto', e.target.value)}
               placeholder="Teléfono, email o Instagram..."
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
+              className="w-full px-3 py-2 rounded-xl border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
             />
           </div>
 
           {/* Foto */}
           <div>
             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5" /> Foto (opcional)
+              <FontAwesomeIcon icon={faImage} className="w-3.5 h-3.5" /> Foto (opcional)
             </label>
             {previewFoto ? (
-              <div className="relative rounded-xl overflow-hidden border border-gray-200">
+              <div className="relative rounded-xl overflow-hidden border border-gray-100">
                 <img src={previewFoto} alt="Preview" className="w-full h-24 object-cover" />
                 <button
                   type="button"
                   onClick={() => { setPreviewFoto(null); setForm(prev => ({ ...prev, fotoUrl: '' })); }}
                   className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 transition-colors"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <FontAwesomeIcon icon={faXmark} className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
@@ -307,11 +332,11 @@ const ModalPublicar = ({ onClose, onPublicado }: ModalPublicarProps) => {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={subiendoFoto}
-                className="w-full flex flex-col items-center gap-1.5 py-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-forest-green text-gray-400 hover:text-forest-green transition-colors"
+                className="w-full flex flex-col items-center gap-1.5 py-4 rounded-xl border-2 border-dashed border-gray-100 hover:border-forest-green text-gray-400 hover:text-gray-400 transition-colors"
               >
                 {subiendoFoto
-                  ? <Loader2 className="w-6 h-6 animate-spin" />
-                  : <Upload className="w-6 h-6" />
+                  ? <FontAwesomeIcon icon={faSpinner} className="w-6 h-6 animate-spin" />
+                  : <FontAwesomeIcon icon={faUpload} className="w-6 h-6" />
                 }
                 <span className="text-xs font-semibold">
                   {subiendoFoto ? 'Subiendo imagen...' : 'Subir imagen (JPG/PNG, máx. 5MB)'}
@@ -332,7 +357,7 @@ const ModalPublicar = ({ onClose, onPublicado }: ModalPublicarProps) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-2.5 rounded-xl border border-gray-100 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
             >
               Cancelar
             </button>
@@ -343,8 +368,8 @@ const ModalPublicar = ({ onClose, onPublicado }: ModalPublicarProps) => {
                          shadow-md shadow-green-950/20 hover:bg-green-700 active:scale-98
                          transition-all disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {enviando && <Loader2 className="w-4 h-4 animate-spin" />}
-              Publicar
+              {enviando && <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 animate-spin" />}
+              {publicacionEditar ? 'Guardar cambios' : 'Publicar'}
             </button>
           </div>
         </form>
@@ -355,10 +380,10 @@ const ModalPublicar = ({ onClose, onPublicado }: ModalPublicarProps) => {
 
 // ── Página principal ───────────────────────────────────────────────────────────
 
-const FILTROS: { label: string; valor: TipoPublicacion | null }[] = [
-  { label: '🐾 Todos', valor: null },
-  { label: '🤔 Dudas', valor: 'DUDA' },
-  { label: 'ℹ️ Info', valor: 'INFO' },
+const FILTROS: { label: React.ReactNode; valor: TipoPublicacion | null }[] = [
+  { label: <><FontAwesomeIcon icon={faGrip} className="w-3.5 h-3.5 inline mr-1" /> Todos</>, valor: null },
+  { label: <><FontAwesomeIcon icon={faCircleQuestion} className="w-3.5 h-3.5 inline mr-1" /> Dudas</>, valor: 'DUDA' },
+  { label: <><FontAwesomeIcon icon={faInfoCircle} className="w-3.5 h-3.5 inline mr-1" /> Info</>, valor: 'INFO' },
 ];
 
 const TablonAnuncios = () => {
@@ -370,6 +395,8 @@ const TablonAnuncios = () => {
   const [cargando, setCargando] = useState(true);
   const [filtro, setFiltro] = useState<TipoPublicacion | null>(null);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [publicacionDetalle, setPublicacionDetalle] = useState<PublicacionTablon | null>(null);
+  const [publicacionEditar, setPublicacionEditar] = useState<PublicacionTablon | null>(null);
 
   const esAdmin = user?.role === 'ROL_ADMIN';
 
@@ -395,6 +422,12 @@ const TablonAnuncios = () => {
       navigate('/iniciar-sesion');
       return;
     }
+    setPublicacionEditar(null);
+    setModalAbierto(true);
+  };
+
+  const handleEditar = (pub: PublicacionTablon) => {
+    setPublicacionEditar(pub);
     setModalAbierto(true);
   };
 
@@ -412,58 +445,71 @@ const TablonAnuncios = () => {
   return (
     <div className="h-full w-full overflow-y-auto bg-gray-50">
       {/* Hero Header */}
-      <div className="bg-gradient-to-br from-forest-green via-green-700 to-emerald-800 text-white">
-        <div className="max-w-4xl mx-auto px-6 py-10">
-          <h1 className="text-3xl font-black tracking-tight mb-1">📋 Anuncios</h1>
-          <p className="text-green-100 text-sm">
-            La comunidad perruna de A Coruña — comparte dudas e información de la comunidad
-          </p>
-
-          <button
-            onClick={handlePublicar}
-            className="mt-6 inline-flex items-center gap-2 bg-white text-forest-green
-                       font-bold px-6 py-3 rounded-2xl shadow-lg hover:bg-gray-50
-                       active:scale-95 transition-all text-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Publicar anuncio
-          </button>
+      <div className="bg-white border-b-4 border-forest-green/30">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center">
+                <div className="w-12 h-12 rounded-2xl bg-forest-green flex items-center justify-center mr-4 shadow-md border border-forest-green/30">
+                  <FontAwesomeIcon icon={faClipboardList} className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-black tracking-tight text-gray-900">Anuncios</h1>
+                  <p className="text-gray-500 text-sm font-medium">
+                    La comunidad perruna de A Coruña — comparte dudas e información
+                  </p>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handlePublicar}
+              className="inline-flex items-center gap-2 bg-forest-green text-white
+                         font-bold px-6 py-3 rounded-2xl shadow-lg hover:bg-green-700
+                         active:scale-95 transition-all text-sm"
+            >
+              <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
+              Publicar anuncio
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Filtros */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-4xl mx-auto px-6 py-3 flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          {FILTROS.map(f => (
-            <button
-              key={String(f.valor)}
-              onClick={() => setFiltro(f.valor)}
-              className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all border ${
-                filtro === f.valor
-                  ? 'bg-forest-green text-white border-forest-green shadow-sm'
-                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="max-w-6xl mx-auto px-6 py-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide relative items-center justify-center">
+          {FILTROS.map(f => {
+            const activo = filtro === f.valor;
+            return (
+              <button
+                key={String(f.valor)}
+                onClick={() => setFiltro(f.valor)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all shrink-0 ${
+                  activo
+                    ? 'bg-forest-green text-white border-forest-green shadow-sm'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-forest-green hover:text-forest-green'
+                }`}
+              >
+                {f.label}
+              </button>
+            )
+          })}
 
           <button
             onClick={cargar}
             disabled={cargando}
             title="Recargar"
-            className="ml-auto shrink-0 p-2 rounded-full border border-gray-200 text-gray-400 hover:bg-gray-50 transition-colors"
+            className="absolute right-6 shrink-0 p-2 rounded-full border border-gray-100 text-forest-green hover:bg-green-50 transition-colors bg-white shadow-sm"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${cargando ? 'animate-spin' : ''}`} />
+            <FontAwesomeIcon icon={faRotateRight} className={`w-3.5 h-3.5 ${cargando ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
       {/* Contenido */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-8">
         {cargando ? (
           // Skeleton loader
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse">
                 <div className="flex items-center justify-between mb-3">
@@ -479,8 +525,8 @@ const TablonAnuncios = () => {
         ) : publicaciones.length === 0 ? (
           // Estado vacío
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">
-              {filtro === 'DUDA' ? '🤔' : filtro === 'INFO' ? 'ℹ️' : '📋'}
+            <div className="flex justify-center mb-4 text-gray-400">
+              {filtro === 'DUDA' ? <FontAwesomeIcon icon={faCircleQuestion} className="w-16 h-16" /> : filtro === 'INFO' ? <FontAwesomeIcon icon={faInfoCircle} className="w-16 h-16" /> : <FontAwesomeIcon icon={faClipboardList} className="w-16 h-16" />}
             </div>
             <h3 className="text-lg font-bold text-gray-700 mb-1">
               {filtro ? `No hay anuncios de tipo "${TIPO_CONFIG[filtro].label}"` : 'No hay anuncios'}
@@ -493,13 +539,13 @@ const TablonAnuncios = () => {
               className="inline-flex items-center gap-2 bg-forest-green text-white font-bold
                          px-6 py-3 rounded-2xl shadow-md hover:bg-green-700 transition-all text-sm"
             >
-              <Plus className="w-4 h-4" />
+              <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
               Publicar anuncio
             </button>
           </div>
         ) : (
           // Grid de tarjetas
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {publicaciones.map(pub => (
               <TarjetaAnuncio
                 key={pub.id}
@@ -507,18 +553,79 @@ const TablonAnuncios = () => {
                 usuarioId={user?.id}
                 esAdmin={esAdmin}
                 onEliminar={handleEliminar}
+                onVerDetalle={setPublicacionDetalle}
+                onEditar={handleEditar}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modal publicar / editar */}
       {modalAbierto && (
         <ModalPublicar
-          onClose={() => setModalAbierto(false)}
-          onPublicado={() => { setModalAbierto(false); cargar(); }}
+          publicacionEditar={publicacionEditar}
+          onClose={() => { setModalAbierto(false); setPublicacionEditar(null); }}
+          onPublicado={() => { setModalAbierto(false); setPublicacionEditar(null); cargar(); }}
         />
+      )}
+
+      {/* Modal detalle anuncio */}
+      {publicacionDetalle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPublicacionDetalle(null)} />
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-5 text-white">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="mb-2"><BadgeTipo tipo={publicacionDetalle.tipo} /></div>
+                  <h2 className="text-xl font-black leading-tight">{publicacionDetalle.titulo}</h2>
+                  <p className="text-slate-300 text-sm mt-1">
+                    {publicacionDetalle.autorNombre || 'Anónimo'} &middot; {tiempoRelativo(publicacionDetalle.creadoEn)}
+                  </p>
+                </div>
+                <button onClick={() => setPublicacionDetalle(null)} className="p-1.5 rounded-xl bg-white/20 hover:bg-white/30 transition-colors">
+                  <FontAwesomeIcon icon={faXmark} className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              {publicacionDetalle.fotoUrl && (
+                <img src={publicacionDetalle.fotoUrl} alt={publicacionDetalle.titulo} className="w-full h-48 object-cover rounded-xl" />
+              )}
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                  <FontAwesomeIcon icon={faAlignLeft} className="w-4 h-4 text-slate-600" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Contenido</p>
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{publicacionDetalle.contenido}</p>
+                </div>
+              </div>
+              {publicacionDetalle.infoContacto && (
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                    <FontAwesomeIcon icon={faPhone} className="w-4 h-4 text-slate-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Contacto</p>
+                    <p className="text-sm font-semibold text-gray-800">{publicacionDetalle.infoContacto}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => setPublicacionDetalle(null)}
+                className="w-full py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm hover:bg-gray-200 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
