@@ -60,6 +60,9 @@ const Inicio = () => {
 
   // Categorías seleccionadas (multi-select)
   const [categoriasActivas, setCategoriasActivas] = useState<string[]>([])
+  
+  // Menú móvil (lista vs mapa)
+  const [menuMovilAbierto, setMenuMovilAbierto] = useState(false)
 
 
   const listRef = useRef<HTMLDivElement>(null)
@@ -178,8 +181,11 @@ const Inicio = () => {
         {/* Sidebar izquierdo */}
         <div
           ref={listRef}
-          className="w-[380px] min-w-[300px] h-full overflow-y-auto overflow-x-hidden
-                     bg-gray-50 border-r border-gray-200 shrink-0 flex flex-col"
+          className={`
+            absolute md:relative z-30 bg-gray-50 border-r border-gray-200 shrink-0 flex flex-col transition-transform duration-300
+            w-full h-full md:w-[380px] md:min-w-[300px]
+            ${menuMovilAbierto ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}
+          `}
         >
           {/* Contador + limpiar */}
           <div className="px-4 pt-3 pb-2 flex items-center justify-between shrink-0">
@@ -285,6 +291,15 @@ const Inicio = () => {
         {/* Mapa */}
         <div className="flex-1 h-full relative overflow-hidden bg-gray-100">
           <ComponenteMapa lugares={lugaresMostrar} />
+          
+          {/* Botón flotante para móvil */}
+          <button
+            onClick={() => setMenuMovilAbierto(!menuMovilAbierto)}
+            className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-40 bg-forest-green text-white px-6 py-3 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.2)] font-bold flex items-center gap-2 active:scale-95 transition-all border-2 border-white/20"
+          >
+            <FontAwesomeIcon icon={menuMovilAbierto ? faXmark : faLocationDot} /> 
+            {menuMovilAbierto ? 'Cerrar Lista' : 'Ver Lista de Lugares'}
+          </button>
         </div>
       </div>
     </div>

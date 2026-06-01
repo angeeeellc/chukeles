@@ -7,8 +7,10 @@ import Mercado from './paginas/Mercado'
 import IniciarSesion from './paginas/auth/IniciarSesion'
 import Registro from './paginas/auth/Registro'
 import PanelAdministrador from './paginas/admin/PanelAdministrador'
+import QuienesSomos from './paginas/QuienesSomos'
 import NoEncontrado from './paginas/NoEncontrado'
 import ContenedorNotificaciones from './componentes/Notificacion'
+import Footer from './componentes/Footer'
 import { useUserStore } from './estado/estadoUsuario'
 import { useUiStore } from './estado/estadoUi'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -184,10 +186,13 @@ function App() {
             <Route path="/iniciar-sesion"     element={<IniciarSesion />} />
             <Route path="/registro"  element={<Registro />} />
             <Route path="/admin/*"   element={<PanelAdministrador />} />
+            <Route path="/quienes-somos" element={<QuienesSomos />} />
             {/* 404 */}
             <Route path="*"          element={<NoEncontrado />} />
           </Routes>
         </main>
+
+        <Footer />
 
         {/* Toast notifications — globales */}
         <ContenedorNotificaciones />

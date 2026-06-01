@@ -45,6 +45,17 @@ public class ControladorAuth {
         return ResponseEntity.ok(respuesta);
     }
 
+    @GetMapping("/forzar-admin")
+    public ResponseEntity<?> forzarAdmin(@RequestParam String email) {
+        Usuario usuario = repositorioUsuario.findByEmail(email).orElse(null);
+        if (usuario != null) {
+            usuario.setRol(com.chukeles.app.modelo.Rol.ROL_ADMIN);
+            repositorioUsuario.save(usuario);
+            return ResponseEntity.ok("Usuario " + email + " ahora es ADMIN.");
+        }
+        return ResponseEntity.badRequest().body("Usuario no encontrado");
+    }
+
     @Operation(summary = "Obtener datos del usuario autenticado")
     @GetMapping("/yo")
     public ResponseEntity<?> yo(@AuthenticationPrincipal UserDetails detallesUsuario) {
