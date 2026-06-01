@@ -206,7 +206,7 @@ const DashboardAdmin = () => {
       {/* Sub-Header Actions & Tabs */}
       <div className="bg-white border-b border-gray-100 p-4 shrink-0 flex flex-col md:flex-row gap-4 md:items-center justify-between">
         {/* Tabs */}
-        <div className="flex bg-gray-100 p-1 rounded-xl self-start gap-1">
+        <div className="flex bg-gray-100 p-1 rounded-xl self-start gap-1 overflow-x-auto w-full md:w-auto scrollbar-hide shrink-0">
           <button 
             onClick={() => { setActiveTab('lugares'); setBusqueda(''); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${

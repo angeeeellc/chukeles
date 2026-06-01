@@ -536,7 +536,7 @@ const Mercado = () => {
 
       {/* Filtros */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide relative items-center justify-start md:justify-center">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex gap-2 overflow-x-auto scrollbar-hide items-center justify-start md:justify-center">
           {/* Filtros de categoría */}
           <button
             onClick={() => setFiltroCat(null)}
@@ -591,7 +591,7 @@ const Mercado = () => {
             onClick={cargar}
             disabled={cargando}
             title="Recargar"
-            className="absolute right-6 shrink-0 p-2 rounded-full border border-gray-100 text-forest-green hover:bg-green-50 transition-colors bg-white shadow-sm"
+            className="shrink-0 ml-auto p-2 rounded-full border border-gray-100 text-forest-green hover:bg-green-50 transition-colors bg-white"
           >
             <FontAwesomeIcon icon={faRotateRight} className={`w-3.5 h-3.5 ${cargando ? 'animate-spin' : ''}`} />
           </button>

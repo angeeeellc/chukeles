@@ -171,7 +171,7 @@ const Navbar = () => {
 function App() {
   return (
     <Router>
-      <div className="h-screen w-screen bg-gray-50 flex flex-col overflow-hidden">
+      <div className="h-[100dvh] w-screen bg-gray-50 flex flex-col overflow-hidden">
         <Navbar />
 
         {/* Contenido de rutas */}

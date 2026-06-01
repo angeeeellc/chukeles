@@ -5,7 +5,7 @@ import ComponenteMapa from '../componentes/ComponenteMapa'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMagnifyingGlass, faLocationDot, faXmark, faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faMugHot, faPaw } from '@fortawesome/free-solid-svg-icons'
 import { useDebounce } from '../ganchos/useDebounce'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 // ── Categorías disponibles ────────────────────────────────────────────────────
 const CATEGORIAS = [
@@ -291,15 +291,21 @@ const Inicio = () => {
         {/* Mapa */}
         <div className="flex-1 h-full relative overflow-hidden bg-gray-100">
           <ComponenteMapa lugares={lugaresMostrar} />
-          
           {/* Botón flotante para móvil */}
           <button
             onClick={() => setMenuMovilAbierto(!menuMovilAbierto)}
-            className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-40 bg-forest-green text-white px-6 py-3 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.2)] font-bold flex items-center gap-2 active:scale-95 transition-all border-2 border-white/20"
+            className="md:hidden absolute bottom-12 left-1/2 -translate-x-1/2 z-[60] bg-forest-green text-white px-6 py-3 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.3)] font-bold flex items-center gap-2 active:scale-95 transition-all border-2 border-white/20"
           >
             <FontAwesomeIcon icon={menuMovilAbierto ? faXmark : faLocationDot} /> 
             {menuMovilAbierto ? 'Cerrar Lista' : 'Ver Lista de Lugares'}
           </button>
+          
+          {/* Footer flotante en Mapa */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[50] bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] text-forest-green/90 shadow-sm border border-white/50 flex items-center gap-3 w-max">
+            <span className="font-bold flex items-center gap-1.5"><FontAwesomeIcon icon={faPaw} /> Chukeles</span>
+            <span className="w-px h-3 bg-forest-green/20"></span>
+            <Link to="/quienes-somos" className="hover:text-green-700 font-bold transition-colors">Quiénes Somos</Link>
+          </div>
         </div>
       </div>
     </div>
