@@ -23,6 +23,7 @@ public class Usuario {
     private String email;
 
     @NotBlank
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String contrasena;
 
     @NotBlank

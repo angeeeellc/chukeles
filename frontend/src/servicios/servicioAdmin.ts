@@ -74,3 +74,20 @@ export const fetchEventosAdmin = async (): Promise<Evento[]> => {
 export const eliminarEventoAdmin = async (id: number): Promise<void> => {
   await clienteApi.delete(`/eventos/${id}`);
 };
+
+// ── Endpoints de Usuarios ─────────────────────────────────────────────────────
+export interface UsuarioAdmin {
+  id: number;
+  email: string;
+  nombre: string;
+  rol: string;
+}
+
+export const fetchUsuariosAdmin = async (): Promise<UsuarioAdmin[]> => {
+  const response = await clienteApi.get<UsuarioAdmin[]>('/admin/usuarios');
+  return response.data;
+};
+
+export const cambiarRolUsuarioAdmin = async (id: number, rol: string): Promise<void> => {
+  await clienteApi.put(`/admin/usuarios/${id}/rol`, { rol });
+};

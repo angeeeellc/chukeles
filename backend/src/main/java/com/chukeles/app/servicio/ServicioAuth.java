@@ -33,12 +33,14 @@ public class ServicioAuth {
             throw new IllegalArgumentException("Ya existe un usuario con ese email");
         }
 
+        Rol rolAsignado = repositorioUsuario.count() == 0 ? Rol.ROL_ADMIN : Rol.ROL_USUARIO;
+
         Usuario nuevoUsuario = Usuario.builder()
                 .email(peticion.getEmail())
                 .contrasena(passwordEncoder.encode(peticion.getContrasena()))
                 .nombre(peticion.getNombre())
                 .telefono(peticion.getTelefono())
-                .rol(Rol.ROL_USUARIO)
+                .rol(rolAsignado)
                 .build();
 
         repositorioUsuario.save(nuevoUsuario);

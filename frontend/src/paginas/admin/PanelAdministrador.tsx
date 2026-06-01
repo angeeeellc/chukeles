@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faTrash, faEdit, faPlus, faMagnifyingGlass, faRightFromBracket, faLocationDot, 
   faFileLines, faShoppingBag, faCalendarAlt, faShieldHalved, faRotateRight,
-  faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faLocationArrow, faCircleQuestion, faInfoCircle
+  faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faLocationArrow, faCircleQuestion, faInfoCircle, faUsers
 } from '@fortawesome/free-solid-svg-icons';
 import { useUserStore } from '../../estado/estadoUsuario';
 import { useUiStore } from '../../estado/estadoUi';
@@ -17,7 +17,8 @@ import { fetchPlaces, eliminarLugarApi, type Lugar } from '../../servicios/servi
 import { 
   fetchPublicacionesAdmin, eliminarPublicacionAdmin, type PublicacionTablon,
   fetchAnunciosAdmin, eliminarAnuncioAdmin, type AnuncioMercado,
-  fetchEventosAdmin, eliminarEventoAdmin, type Evento 
+  fetchEventosAdmin, eliminarEventoAdmin, type Evento,
+  fetchUsuariosAdmin, cambiarRolUsuarioAdmin, type UsuarioAdmin
 } from '../../servicios/servicioAdmin';
 
 // ── VISTA PRINCIPAL DEL DASHBOARD ─────────────────────────────────────────────
@@ -26,7 +27,7 @@ const DashboardAdmin = () => {
   const { user, logout } = useUserStore();
   const { addToast } = useUiStore();
 
-  const [activeTab, setActiveTab] = useState<'lugares' | 'tablon' | 'mercado' | 'eventos'>('lugares');
+  const [activeTab, setActiveTab] = useState<'lugares' | 'tablon' | 'mercado' | 'eventos' | 'usuarios'>('lugares');
   const [busqueda, setBusqueda] = useState('');
   const [cargando, setCargando] = useState(false);
 
@@ -35,6 +36,7 @@ const DashboardAdmin = () => {
   const [publicaciones, setPublicaciones] = useState<PublicacionTablon[]>([]);
   const [anuncios, setAnuncios] = useState<AnuncioMercado[]>([]);
   const [eventos, setEventos] = useState<Evento[]>([]);
+  const [usuarios, setUsuarios] = useState<UsuarioAdmin[]>([]);
 
   // Estado del modal de Lugar
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -56,6 +58,9 @@ const DashboardAdmin = () => {
       } else if (activeTab === 'eventos') {
         const data = await fetchEventosAdmin();
         setEventos(data);
+      } else if (activeTab === 'usuarios') {
+        const data = await fetchUsuariosAdmin();
+        setUsuarios(data);
       }
     } catch (err) {
       addToast('Error al obtener los datos del servidor.', 'error');
@@ -123,6 +128,18 @@ const DashboardAdmin = () => {
     }
   };
 
+  const handleHacerAdmin = async (id: number) => {
+    if (window.confirm('¿Estás seguro de que quieres dar permisos de administrador a este usuario?')) {
+      try {
+        await cambiarRolUsuarioAdmin(id, 'ROL_ADMIN');
+        addToast('Permisos de administrador concedidos.', 'success');
+        cargarDatos();
+      } catch (err) {
+        addToast('No se pudo cambiar el rol.', 'error');
+      }
+    }
+  };
+
   // Filtrado de búsquedas en memoria
   const filtrarLugares = lugares.filter(l => 
     l.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
@@ -142,6 +159,11 @@ const DashboardAdmin = () => {
   const filtrarEventos = eventos.filter(e => 
     e.titulo.toLowerCase().includes(busqueda.toLowerCase()) || 
     e.ubicacion.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
+  const filtrarUsuarios = usuarios.filter(u => 
+    u.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
+    u.email.toLowerCase().includes(busqueda.toLowerCase())
   );
 
   const traducirCategoria = (cat: string) => {
@@ -220,6 +242,15 @@ const DashboardAdmin = () => {
           >
             <FontAwesomeIcon icon={faCalendarAlt} className="w-3.5 h-3.5" />
             Quedadas
+          </button>
+          <button 
+            onClick={() => { setActiveTab('usuarios'); setBusqueda(''); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              activeTab === 'usuarios' ? 'bg-white text-forest-green shadow-sm' : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            <FontAwesomeIcon icon={faUsers} className="w-3.5 h-3.5" />
+            Usuarios
           </button>
         </div>
 
@@ -493,6 +524,55 @@ const DashboardAdmin = () => {
                             >
                               <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
                             </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              )}
+
+              {/* USUARIOS TABLE */}
+              {activeTab === 'usuarios' && (
+                <table className="w-full text-left border-collapse min-w-[700px]">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-[10px] font-bold uppercase tracking-wider">
+                      <th className="px-6 py-3.5">ID</th>
+                      <th className="px-6 py-3.5">Nombre</th>
+                      <th className="px-6 py-3.5">Email</th>
+                      <th className="px-6 py-3.5 text-center">Rol</th>
+                      <th className="px-6 py-3.5 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+                    {filtrarUsuarios.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-10 text-gray-400 font-medium">No se han encontrado usuarios.</td>
+                      </tr>
+                    ) : (
+                      filtrarUsuarios.map(u => (
+                        <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-3 font-semibold text-gray-500">{u.id}</td>
+                          <td className="px-6 py-3 font-semibold text-gray-900 max-w-[200px] truncate">{u.nombre}</td>
+                          <td className="px-6 py-3 text-xs text-gray-600 max-w-[200px] truncate">{u.email}</td>
+                          <td className="px-6 py-3 text-center">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold ${
+                              u.rol === 'ROL_ADMIN' 
+                                ? 'bg-purple-50 text-purple-700 border border-purple-100' 
+                                : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {u.rol === 'ROL_ADMIN' ? 'Administrador' : 'Usuario'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-3 text-right">
+                            {u.rol !== 'ROL_ADMIN' && (
+                              <button 
+                                onClick={() => handleHacerAdmin(u.id)}
+                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-forest-green border border-forest-green/30 hover:bg-forest-green hover:text-white transition-colors"
+                              >
+                                Hacer Admin
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))

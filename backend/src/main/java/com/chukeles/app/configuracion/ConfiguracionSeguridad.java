@@ -68,6 +68,7 @@ public class ConfiguracionSeguridad {
                     "/h2-console/**"
                 ).permitAll()
                 // ── Rutas de admin (solo ROL_ADMIN) ─────────────────────────
+                .requestMatchers("/api/admin/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.POST,   "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.PUT,    "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/lugares/**").hasAuthority("ROL_ADMIN")
