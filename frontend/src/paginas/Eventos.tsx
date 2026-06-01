@@ -9,8 +9,8 @@ import { useUserStore } from '../estado/estadoUsuario';
 import { useUiStore } from '../estado/estadoUi';
 import {
   fetchEventos, crearEvento, actualizarEvento, unirseEvento, salirEvento, eliminarEvento,
-  type Evento, type EventoCategoria
-} from '../servicios/servicioEventos';
+  type Evento, type NuevoEvento
+} from '../servicios/servicioEvento';
 import Footer from '../componentes/Footer';
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 
