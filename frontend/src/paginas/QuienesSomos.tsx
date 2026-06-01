@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGraduationCap, faCode, faPaw } from '@fortawesome/free-solid-svg-icons';
+import Footer from '../componentes/Footer';
 
 const QuienesSomos = () => {
   return (
@@ -46,6 +47,7 @@ const QuienesSomos = () => {
 
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

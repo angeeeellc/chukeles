@@ -183,7 +183,7 @@ const Inicio = () => {
           ref={listRef}
           className={`
             absolute md:relative z-30 bg-gray-50 border-r border-gray-200 shrink-0 flex flex-col transition-transform duration-300
-            w-full h-full md:w-[380px] md:min-w-[300px]
+            w-full h-full md:w-[380px] md:min-w-[300px] overflow-y-auto overflow-x-hidden
             ${menuMovilAbierto ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}
           `}
         >

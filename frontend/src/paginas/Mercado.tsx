@@ -13,6 +13,7 @@ import {
   type AnuncioMercado, type NuevoAnuncio, type CategoriaMercado, type EstadoMercado
 } from '../servicios/servicioMercado';
 import clienteApi from '../servicios/clienteApi';
+import Footer from '../componentes/Footer';
 
 // ── Constantes ─────────────────────────────────────────────────────────────────
 
@@ -649,6 +650,8 @@ const Mercado = () => {
           </div>
         )}
       </div>
+
+      <Footer />
 
       {/* Modal publicar / editar */}
       {modalAbierto && (

@@ -9,8 +9,9 @@ import { useUserStore } from '../estado/estadoUsuario';
 import { useUiStore } from '../estado/estadoUi';
 import {
   fetchEventos, crearEvento, actualizarEvento, unirseEvento, salirEvento, eliminarEvento,
-  type Evento, type NuevoEvento
-} from '../servicios/servicioEvento';
+  type Evento, type EventoCategoria
+} from '../servicios/servicioEventos';
+import Footer from '../componentes/Footer';
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 
 // ── Utilidades ─────────────────────────────────────────────────────────────────
@@ -583,6 +584,8 @@ const Eventos = () => {
           </>
         )}
       </div>
+
+      <Footer />
 
       {/* Modal crear / editar */}
       {modalAbierto && (

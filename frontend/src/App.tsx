@@ -192,8 +192,6 @@ function App() {
           </Routes>
         </main>
 
-        <Footer />
-
         {/* Toast notifications — globales */}
         <ContenedorNotificaciones />
       </div>

@@ -14,6 +14,7 @@ import {
 } from '../servicios/servicioTablon';
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import clienteApi from '../servicios/clienteApi';
+import Footer from '../componentes/Footer';
 
 // ── Utilidades ─────────────────────────────────────────────────────────────────
 
@@ -560,6 +561,8 @@ const TablonAnuncios = () => {
           </div>
         )}
       </div>
+
+      <Footer />
 
       {/* Modal publicar / editar */}
       {modalAbierto && (
