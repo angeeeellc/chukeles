@@ -238,7 +238,12 @@ const Inicio = () => {
                 <div
                   key={lugar.id}
                   data-id={lugar.id}
-                  onClick={() => setLugarSeleccionado(lugar)}
+                  onClick={() => {
+                    setLugarSeleccionado(lugar);
+                    if (window.innerWidth < 768) {
+                      setMenuMovilAbierto(false);
+                    }
+                  }}
                   className={`bg-white rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ease-out border ${
                     lugarSeleccionado?.id === lugar.id
                       ? 'border-forest-green ring-2 ring-forest-green/20 shadow-md scale-[1.02]'
@@ -301,9 +306,9 @@ const Inicio = () => {
           </button>
           
           {/* Footer flotante en Mapa */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[50] bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] text-forest-green/90 shadow-sm border border-white/50 flex items-center gap-3 w-max">
-            <span className="font-bold flex items-center gap-1.5"><FontAwesomeIcon icon={faPaw} /> Chukeles</span>
-            <span className="w-px h-3 bg-forest-green/20"></span>
+          <div className="absolute bottom-3 md:bottom-6 md:right-6 md:left-auto md:translate-x-0 left-1/2 -translate-x-1/2 z-[50] bg-white/70 backdrop-blur-md px-4 py-1.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs text-forest-green/90 shadow-sm border border-white/50 flex items-center gap-3 w-max transition-all hover:bg-white/90">
+            <span className="font-bold flex items-center gap-1.5"><FontAwesomeIcon icon={faPaw} className="md:w-4 md:h-4" /> <span className="hidden md:inline text-sm tracking-tight">Chukeles</span></span>
+            <span className="w-px h-3 md:h-4 bg-forest-green/20"></span>
             <Link to="/quienes-somos" className="hover:text-green-700 font-bold transition-colors">Quiénes Somos</Link>
           </div>
         </div>
