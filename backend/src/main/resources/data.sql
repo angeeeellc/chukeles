@@ -56,9 +56,9 @@ INSERT INTO publicaciones_tablon (id, titulo, contenido, info_contacto, user_id,
 (2, 'Campamento canino este fin de semana', 'Os informo de que quedan plazas libres para el campamento de socialización que organiza Montegatto este sábado. ¡Muy recomendable!', 'Más info en la web de Montegatto', 2, '2026-05-17 12:30:00');
 
 -- 4. Carga de anuncios de mercado (tienda)
-INSERT INTO anuncios_mercado (id, titulo, precio, descripcion, foto_url, categoria, estado, user_id, creado_en) VALUES
-(1, 'Transportín homologado mediano', 45.0, 'Vendo transportín en perfecto estado, usado solo dos veces. Medidas 60x40x40 cm. Homologado por IATA para viajar en avión.', 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800', 'ACCESORIOS', 'DISPONIBLE', 2, '2026-05-17 09:15:00'),
-(2, 'Arnés ajustable Julius K9 (Talla L)', 25.0, 'Arnés de color rojo reflectante, ultra resistente. Ideal para perros de raza mediana a grande (20-30 kg). Prácticamente nuevo.', 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=800', 'ACCESORIOS', 'DISPONIBLE', 2, '2026-05-17 11:45:00');
+INSERT INTO anuncios_mercado (id, titulo, precio, descripcion, foto_url, categoria, estado, info_contacto, user_id, creado_en) VALUES
+(1, 'Transportín homologado mediano', 45.0, 'Vendo transportín en perfecto estado, usado solo dos veces. Medidas 60x40x40 cm. Homologado por IATA para viajar en avión.', 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800', 'ACCESORIOS', 'DISPONIBLE', 'Martín - 655 44 33 21', 2, '2026-05-17 09:15:00'),
+(2, 'Arnés ajustable Julius K9 (Talla L)', 25.0, 'Arnés de color rojo reflectante, ultra resistente. Ideal para perros de raza mediana a grande (20-30 kg). Prácticamente nuevo.', 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=800', 'ACCESORIOS', 'DISPONIBLE', 'Laura - 655 44 33 22', 2, '2026-05-17 11:45:00');
 
 -- 5. Carga de quedadas caninas (eventos)
 INSERT INTO eventos (id, titulo, fecha, hora, ubicacion, lat, lng, max_participantes, descripcion, user_id) VALUES

@@ -63,6 +63,8 @@ const Inicio = () => {
   
   // Menú móvil (lista vs mapa)
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false)
+  // En móvil: al pulsar un marcador del mapa, mostrar solo ese lugar en la lista
+  const [mostrarSoloSeleccionado, setMostrarSoloSeleccionado] = useState(false)
 
 
   const listRef = useRef<HTMLDivElement>(null)
@@ -87,11 +89,19 @@ const Inicio = () => {
 
 
 
-  // Scroll hacia la tarjeta seleccionada
+  // Al seleccionar un lugar: en móvil abre la lista mostrando solo ese lugar;
+  // en desktop hace scroll a la tarjeta
   useEffect(() => {
-    if (lugarSeleccionado && listRef.current) {
-      const el = listRef.current.querySelector(`[data-id="${lugarSeleccionado.id}"]`)
-      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    if (lugarSeleccionado) {
+      if (window.innerWidth < 768) {
+        setMostrarSoloSeleccionado(true)
+        setMenuMovilAbierto(true)
+      } else if (listRef.current) {
+        const el = listRef.current.querySelector(`[data-id="${lugarSeleccionado.id}"]`)
+        el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    } else {
+      setMostrarSoloSeleccionado(false)
     }
   }, [lugarSeleccionado])
 
@@ -111,9 +121,10 @@ const Inicio = () => {
   }
 
   const lugaresMostrar = useMemo(() => {
+    if (mostrarSoloSeleccionado && lugarSeleccionado) return [lugarSeleccionado];
     if (categoriasActivas.length === 0) return lugares;
     return lugares.filter((l: Lugar) => categoriasActivas.includes(l.categoria.toUpperCase() || l.categoria));
-  }, [lugares, categoriasActivas]);
+  }, [lugares, categoriasActivas, mostrarSoloSeleccionado, lugarSeleccionado]);
 
   const hayFiltrosActivos = busquedaLocal || categoriasActivas.length > 0
 
@@ -187,23 +198,33 @@ const Inicio = () => {
             ${menuMovilAbierto ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}
           `}
         >
-          {/* Contador + limpiar */}
+          {/* Contador + controles */}
           <div className="px-4 pt-3 pb-2 flex items-center justify-between shrink-0">
             <p className="text-xs text-gray-500 font-medium">
               {cargando ? 'Buscando...' : (
                 `${lugaresMostrar.length} ${lugaresMostrar.length === 1 ? 'lugar' : 'lugares'}`
               )}
             </p>
-            {hayFiltrosActivos && (
-              <button
-                id="home-clear-filters"
-                onClick={limpiarTodo}
-                className="flex items-center gap-1 text-xs text-forest-green font-semibold hover:underline"
-              >
-                <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
-                Limpiar filtros
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {mostrarSoloSeleccionado && (
+                <button
+                  onClick={() => setMostrarSoloSeleccionado(false)}
+                  className="flex items-center gap-1 text-xs text-forest-green font-semibold hover:underline"
+                >
+                  ← Ver todos
+                </button>
+              )}
+              {hayFiltrosActivos && !mostrarSoloSeleccionado && (
+                <button
+                  id="home-clear-filters"
+                  onClick={limpiarTodo}
+                  className="flex items-center gap-1 text-xs text-forest-green font-semibold hover:underline"
+                >
+                  <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Skeletons */}
@@ -298,7 +319,11 @@ const Inicio = () => {
           <ComponenteMapa lugares={lugaresMostrar} />
           {/* Botón flotante para móvil */}
           <button
-            onClick={() => setMenuMovilAbierto(!menuMovilAbierto)}
+            onClick={() => {
+              const next = !menuMovilAbierto
+              setMenuMovilAbierto(next)
+              if (!next) setMostrarSoloSeleccionado(false)
+            }}
             className="md:hidden absolute bottom-12 left-1/2 -translate-x-1/2 z-[60] bg-forest-green text-white px-6 py-3 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.3)] font-bold flex items-center gap-2 active:scale-95 transition-all border-2 border-white/20"
           >
             <FontAwesomeIcon icon={menuMovilAbierto ? faXmark : faLocationDot} /> 
@@ -306,8 +331,8 @@ const Inicio = () => {
           </button>
           
           {/* Footer flotante en Mapa */}
-          <div className="absolute bottom-3 md:bottom-6 md:right-6 md:left-auto md:translate-x-0 left-1/2 -translate-x-1/2 z-[50] bg-white/70 backdrop-blur-md px-4 py-1.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs text-forest-green/90 shadow-sm border border-white/50 flex items-center gap-3 w-max transition-all hover:bg-white/90">
-            <span className="font-bold flex items-center gap-1.5"><FontAwesomeIcon icon={faPaw} className="md:w-4 md:h-4" /> <span className="hidden md:inline text-sm tracking-tight">Chukeles</span></span>
+          <div className="absolute bottom-3 md:bottom-6 md:right-20 md:left-auto md:translate-x-0 left-1/2 -translate-x-1/2 z-[50] bg-white/70 backdrop-blur-md px-4 py-1.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs text-forest-green/90 shadow-sm border border-white/50 flex items-center gap-3 w-max transition-all hover:bg-white/90">
+            <Link to="/" className="font-bold flex items-center gap-1.5 hover:opacity-80 transition-opacity"><FontAwesomeIcon icon={faPaw} className="md:w-4 md:h-4" /> <span className="hidden md:inline text-sm tracking-tight">Chukeles</span></Link>
             <span className="w-px h-3 md:h-4 bg-forest-green/20"></span>
             <Link to="/quienes-somos" className="hover:text-green-700 font-bold transition-colors">Quiénes Somos</Link>
           </div>
