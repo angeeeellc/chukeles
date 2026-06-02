@@ -45,6 +45,18 @@ const QuienesSomos = () => {
             </ul>
           </div>
 
+          <div className="bg-amber-50 rounded-2xl p-6 mt-6 border border-amber-200 text-left w-full">
+            <h3 className="font-bold text-amber-800 mb-3 flex items-center gap-2 text-base">
+              <FontAwesomeIcon icon={faPaw} className="text-amber-500" />
+              Aviso sobre el contenido
+            </h3>
+            <ul className="text-sm space-y-2 text-amber-700">
+              <li>✅ <strong>Los lugares del mapa</strong> son establecimientos y espacios <strong>reales</strong> de A Coruña verificados manualmente.</li>
+              <li>⚠️ <strong>Los anuncios del tablón, los productos de la tienda y las quedadas</strong> son contenido de <strong>prueba</strong> generado para demostrar las funcionalidades de la aplicación y no corresponden a ofertas o eventos reales.</li>
+            </ul>
+          </div>
+
+
         </div>
       </div>
       <Footer />
