@@ -30,9 +30,12 @@ const IniciarSesion = () => {
       addToast(`¡Bienvenido de vuelta, ${resp.nombre}!`, 'success');
       navigate('/');
     } catch (err: any) {
-      const msg = err.response?.status === 401
-        ? 'Email o contraseña incorrectos.'
-        : 'Error al acceder. Inténtalo de nuevo.';
+      let msg = 'Error al acceder. Inténtalo de nuevo.';
+      if (err.response?.status === 400 && typeof err.response.data === 'string') {
+        msg = err.response.data; // "Tu cuenta ha sido bloqueada por un administrador."
+      } else if (err.response?.status === 401) {
+        msg = 'Email o contraseña incorrectos.';
+      }
       addToast(msg, 'error');
     } finally {
       setCargando(false);

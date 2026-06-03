@@ -81,6 +81,7 @@ export interface UsuarioAdmin {
   email: string;
   nombre: string;
   rol: string;
+  bloqueado: boolean;
 }
 
 export const fetchUsuariosAdmin = async (): Promise<UsuarioAdmin[]> => {
@@ -90,4 +91,12 @@ export const fetchUsuariosAdmin = async (): Promise<UsuarioAdmin[]> => {
 
 export const cambiarRolUsuarioAdmin = async (id: number, rol: string): Promise<void> => {
   await clienteApi.put(`/admin/usuarios/${id}/rol`, { rol });
+};
+
+export const bloquearUsuarioAdmin = async (id: number, bloqueado: boolean): Promise<void> => {
+  await clienteApi.put(`/admin/usuarios/${id}/bloquear`, { bloqueado });
+};
+
+export const eliminarUsuarioAdmin = async (id: number): Promise<void> => {
+  await clienteApi.delete(`/admin/usuarios/${id}`);
 };

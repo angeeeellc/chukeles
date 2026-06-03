@@ -23,9 +23,15 @@ public class ServicioDetallesUsuario implements UserDetailsService {
         Usuario usuario = repositorioUsuario.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
 
+        boolean activo = !usuario.isBloqueado();
+
         return new org.springframework.security.core.userdetails.User(
                 usuario.getEmail(),
                 usuario.getContrasena(),
+                activo,   // enabled
+                true,     // accountNonExpired
+                true,     // credentialsNonExpired
+                activo,   // accountNonLocked
                 List.of(new SimpleGrantedAuthority(usuario.getRol().name()))
         );
     }

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faPlus, faTrash, faXmark, faLocationDot, faUsers, faCalendarAlt, faClock,
-  faSpinner, faRotateRight, faAlignLeft, faFont, faCheckCircle, faDog
+  faSpinner, faRotateRight, faAlignLeft, faFont, faCheckCircle, faDog,
+  faSearch, faChevronLeft, faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
 import { useUserStore } from '../estado/estadoUsuario';
 import { useUiStore } from '../estado/estadoUi';
@@ -381,6 +382,8 @@ const Eventos = () => {
   const [cargandoId, setCargandoId] = useState<number | null>(null);
   const [eventoDetalle, setEventoDetalle] = useState<Evento | null>(null);
   const [eventoEditar, setEventoEditar] = useState<Evento | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const esAdmin = user?.role === 'ROL_ADMIN';
 
@@ -396,7 +399,8 @@ const Eventos = () => {
     }
   };
 
-  useEffect(() => { cargar(); }, []);
+  useEffect(() => { cargar(); setCurrentPage(1); }, []);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
   const handleOrganizar = () => {
     if (!isAuthenticated) { navigate('/iniciar-sesion'); return; }
@@ -454,8 +458,24 @@ const Eventos = () => {
     }
   };
 
-  const eventosProximos = eventos.filter(e => !esPasado(e.fecha));
-  const eventosPasados = eventos.filter(e => esPasado(e.fecha));
+  let eventosProximos = eventos.filter(e => !esPasado(e.fecha));
+  let eventosPasados = eventos.filter(e => esPasado(e.fecha));
+
+  if (searchTerm.trim()) {
+    const q = searchTerm.toLowerCase();
+    const matches = (e: Evento) => 
+      e.titulo.toLowerCase().includes(q) || 
+      e.ubicacion.toLowerCase().includes(q) || 
+      (e.descripcion && e.descripcion.toLowerCase().includes(q));
+    
+    eventosProximos = eventosProximos.filter(matches);
+    eventosPasados = eventosPasados.filter(matches);
+  }
+
+  const itemsPerPage = 8;
+  const totalPages = Math.max(1, Math.ceil(eventosProximos.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentProximas = eventosProximos.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="h-full w-full overflow-y-auto bg-gray-50">
@@ -503,12 +523,30 @@ const Eventos = () => {
         </div>
       </div>
 
-      {/* Barra de recarga */}
+      {/* Barra de recarga y buscador */}
       <div className="bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
-          <span className="text-xs font-bold text-gray-400">
-            {cargando ? 'Cargando...' : `${eventosProximos.length} quedada${eventosProximos.length !== 1 ? 's' : ''} próxima${eventosProximos.length !== 1 ? 's' : ''}`}
-          </span>
+        <div className="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <span className="text-xs font-bold text-gray-400">
+              {cargando ? 'Cargando...' : `${eventosProximos.length} quedada${eventosProximos.length !== 1 ? 's' : ''} próxima${eventosProximos.length !== 1 ? 's' : ''}`}
+            </span>
+            {/* Buscador */}
+            <div className="relative flex items-center shrink-0">
+              <FontAwesomeIcon icon={faSearch} className="absolute left-3 text-gray-400 w-3.5 h-3.5" />
+              <input 
+                type="text" 
+                placeholder="Buscar quedada..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent w-40 sm:w-64 transition-all"
+              />
+              {searchTerm && (
+                <button onClick={() => setSearchTerm('')} className="absolute right-3 text-gray-400 hover:text-gray-600">
+                  <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
           <button
             onClick={cargar}
             disabled={cargando}
@@ -543,7 +581,7 @@ const Eventos = () => {
           <>
             {/* Próximas */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {eventosProximos.map(e => (
+              {currentProximas.map(e => (
                 <TarjetaEvento
                   key={e.id}
                   evento={e}
@@ -559,12 +597,35 @@ const Eventos = () => {
               ))}
             </div>
 
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-sm font-bold text-gray-600 px-4">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <FontAwesomeIcon icon={faChevronRight} className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
             {/* Pasadas */}
-            {eventosPasados.length > 0 && (
-              <div className="mt-10">
+            {eventosPasados.length > 0 && currentPage === 1 && (
+              <div className="mt-10 pt-6 border-t border-gray-100">
                 <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Quedadas pasadas</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {eventosPasados.map(e => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-70 hover:opacity-100 transition-opacity">
+                  {eventosPasados.slice(0, 4).map(e => (
                     <TarjetaEvento
                       key={e.id}
                       evento={e}

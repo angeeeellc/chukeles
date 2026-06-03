@@ -4,7 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faPlus, faTrash, faXmark, faUpload, faImage, faPhone, faAlignLeft, faFont,
   faSpinner, faRotateRight, faTag, faShoppingBag, faCheckCircle, faBox,
-  faBone, faBriefcase, faShirt, faCompactDisc, faPills, faCoins, faStore, faUser, faGrip, faPenToSquare
+  faBone, faBriefcase, faShirt, faCompactDisc, faPills, faCoins, faStore, faUser, faGrip, faPenToSquare,
+  faSearch, faChevronLeft, faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
 import { useUserStore } from '../estado/estadoUsuario';
 import { useUiStore } from '../estado/estadoUi';
@@ -73,7 +74,7 @@ const TarjetaProducto = ({ anuncio, usuarioId, esAdmin, onEliminar, onToggleEsta
       onClick={() => onVerDetalle(anuncio)}
     >
       {/* Imagen */}
-      <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+      <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
         {anuncio.fotoUrl ? (
           <img
             src={anuncio.fotoUrl}
@@ -436,6 +437,8 @@ const Mercado = () => {
   const [vistaPropia, setVistaPropia] = useState(false);
   const [anuncioDetalle, setAnuncioDetalle] = useState<AnuncioMercado | null>(null);
   const [anuncioEditar, setAnuncioEditar] = useState<AnuncioMercado | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const esAdmin = user?.role === 'ROL_ADMIN';
 
@@ -452,7 +455,8 @@ const Mercado = () => {
     }
   };
 
-  useEffect(() => { cargar(); }, [filtroCat, filtroEstado, vistaPropia]);
+  useEffect(() => { cargar(); setCurrentPage(1); }, [filtroCat, filtroEstado, vistaPropia]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
   const handlePublicar = () => {
     if (!isAuthenticated) { navigate('/iniciar-sesion'); return; }
@@ -486,9 +490,22 @@ const Mercado = () => {
     }
   };
 
-  const anunciosFiltrados = vistaPropia
+  let anunciosFiltrados = vistaPropia
     ? anuncios.filter(a => a.autorId === user?.id)
     : anuncios;
+
+  if (searchTerm.trim()) {
+    const q = searchTerm.toLowerCase();
+    anunciosFiltrados = anunciosFiltrados.filter(a => 
+      a.titulo.toLowerCase().includes(q) || 
+      (a.descripcion && a.descripcion.toLowerCase().includes(q))
+    );
+  }
+
+  const itemsPerPage = 8;
+  const totalPages = Math.max(1, Math.ceil(anunciosFiltrados.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentItems = anunciosFiltrados.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="h-full w-full overflow-y-auto bg-gray-50">
@@ -569,6 +586,23 @@ const Mercado = () => {
 
           <div className="w-px h-5 bg-gray-200 mx-1 shrink-0" />
 
+          {/* Buscador */}
+          <div className="relative flex items-center shrink-0">
+            <FontAwesomeIcon icon={faSearch} className="absolute left-3 text-gray-400 w-3.5 h-3.5" />
+            <input 
+              type="text" 
+              placeholder="Buscar anuncios..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent w-40 sm:w-64 transition-all"
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')} className="absolute right-3 text-gray-400 hover:text-gray-600">
+                <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+
           {/* Filtro de estado (solo en Mis anuncios) */}
           {vistaPropia && FILTROS_ESTADO.map(f => {
             const activo = filtroEstado === f.valor;
@@ -616,38 +650,67 @@ const Mercado = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {[...Array(8)].map((_, i) => <SkeletonTarjeta key={i} />)}
           </div>
-        ) : anunciosFiltrados.length === 0 ? (
+        ) : currentItems.length === 0 ? (
           <div className="text-center py-20">
             <FontAwesomeIcon icon={faStore} className="w-16 h-16 text-forest-green mx-auto mb-4" />
             <h3 className="text-lg font-bold text-gray-700 mb-1">No hay productos</h3>
             <p className="text-sm text-gray-400 mb-6">
-              {vistaPropia
-                ? 'Aún no has publicado ningún producto.'
-                : 'Sé el primero en publicar algo en la tienda.'}
+              {searchTerm 
+                ? 'No se encontraron productos que coincidan con tu búsqueda.' 
+                : vistaPropia
+                  ? 'Aún no has publicado ningún producto.'
+                  : 'Sé el primero en publicar algo en la tienda.'}
             </p>
-            <button
-              onClick={handlePublicar}
-              className="inline-flex items-center gap-2 bg-forest-green text-white font-bold px-6 py-3 rounded-2xl shadow-md hover:bg-green-700 transition-all text-sm"
-            >
-              <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
-              Publicar producto
-            </button>
+            {!searchTerm && (
+              <button
+                onClick={handlePublicar}
+                className="inline-flex items-center gap-2 bg-forest-green text-white font-bold px-6 py-3 rounded-2xl shadow-md hover:bg-green-700 transition-all text-sm"
+              >
+                <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
+                Publicar producto
+              </button>
+            )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {anunciosFiltrados.map(a => (
-              <TarjetaProducto
-                key={a.id}
-                anuncio={a}
-                usuarioId={user?.id}
-                esAdmin={esAdmin}
-                onEliminar={handleEliminar}
-                onToggleEstado={handleToggleEstado}
-                onVerDetalle={setAnuncioDetalle}
-                onEditar={handleEditar}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {currentItems.map(a => (
+                <TarjetaProducto
+                  key={a.id}
+                  anuncio={a}
+                  usuarioId={user?.id}
+                  esAdmin={esAdmin}
+                  onEliminar={handleEliminar}
+                  onToggleEstado={handleToggleEstado}
+                  onVerDetalle={setAnuncioDetalle}
+                  onEditar={handleEditar}
+                />
+              ))}
+            </div>
+
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-sm font-bold text-gray-600 px-4">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <FontAwesomeIcon icon={faChevronRight} className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -671,7 +734,7 @@ const Mercado = () => {
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setAnuncioDetalle(null)} />
             <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
               {anuncioDetalle.fotoUrl && (
-                <img src={anuncioDetalle.fotoUrl} alt={anuncioDetalle.titulo} className="w-full h-52 object-cover" />
+                <img src={anuncioDetalle.fotoUrl} alt={anuncioDetalle.titulo} className="w-full h-64 object-cover" />
               )}
               <div className="bg-gradient-to-r from-teal-600 to-cyan-700 px-6 py-5 text-white">
                 <div className="flex items-start justify-between gap-3">

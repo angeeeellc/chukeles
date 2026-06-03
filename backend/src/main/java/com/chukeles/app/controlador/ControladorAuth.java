@@ -69,4 +69,9 @@ public class ControladorAuth {
                 .rol(usuario.getRol())
                 .build());
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
 }

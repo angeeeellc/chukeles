@@ -58,9 +58,15 @@ public class ServicioAuth {
     }
 
     public RespuestaAuth login(PeticionLogin peticion) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(peticion.getEmail(), peticion.getContrasena())
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(peticion.getEmail(), peticion.getContrasena())
+            );
+        } catch (org.springframework.security.authentication.DisabledException | org.springframework.security.authentication.LockedException e) {
+            throw new IllegalArgumentException("Tu cuenta ha sido bloqueada por un administrador.");
+        } catch (org.springframework.security.core.AuthenticationException e) {
+            throw new IllegalArgumentException("Credenciales incorrectas");
+        }
 
         Usuario usuario = repositorioUsuario.findByEmail(peticion.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Credenciales incorrectas"));

@@ -4,7 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCircleQuestion, faInfoCircle, faPlus, faTrash,
   faXmark, faUpload, faImage, faPhone, faAlignLeft, faFont,
-  faSpinner, faRotateRight, faClipboardList, faGrip
+  faSpinner, faRotateRight, faClipboardList, faGrip,
+  faSearch, faChevronLeft, faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
 import { useUserStore } from '../estado/estadoUsuario';
 import { useUiStore } from '../estado/estadoUi';
@@ -398,6 +399,8 @@ const TablonAnuncios = () => {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [publicacionDetalle, setPublicacionDetalle] = useState<PublicacionTablon | null>(null);
   const [publicacionEditar, setPublicacionEditar] = useState<PublicacionTablon | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const esAdmin = user?.role === 'ROL_ADMIN';
 
@@ -415,8 +418,11 @@ const TablonAnuncios = () => {
 
   useEffect(() => {
     cargar();
+    setCurrentPage(1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtro]);
+
+  useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
   const handlePublicar = () => {
     if (!isAuthenticated) {
@@ -442,6 +448,19 @@ const TablonAnuncios = () => {
       addToast('No se pudo eliminar la publicación.', 'error');
     }
   };
+  let pubsFiltradas = publicaciones;
+  if (searchTerm.trim()) {
+    const q = searchTerm.toLowerCase();
+    pubsFiltradas = pubsFiltradas.filter(p => 
+      p.titulo.toLowerCase().includes(q) || 
+      p.contenido.toLowerCase().includes(q)
+    );
+  }
+
+  const itemsPerPage = 8;
+  const totalPages = Math.max(1, Math.ceil(pubsFiltradas.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentItems = pubsFiltradas.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="h-full w-full overflow-y-auto bg-gray-50">
@@ -495,6 +514,25 @@ const TablonAnuncios = () => {
             )
           })}
 
+          <div className="w-px h-5 bg-gray-200 mx-1 shrink-0" />
+
+          {/* Buscador */}
+          <div className="relative flex items-center shrink-0">
+            <FontAwesomeIcon icon={faSearch} className="absolute left-3 text-gray-400 w-3.5 h-3.5" />
+            <input 
+              type="text" 
+              placeholder="Buscar..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent w-40 sm:w-64 transition-all"
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')} className="absolute right-3 text-gray-400 hover:text-gray-600">
+                <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+
           <button
             onClick={cargar}
             disabled={cargando}
@@ -523,42 +561,73 @@ const TablonAnuncios = () => {
               </div>
             ))}
           </div>
-        ) : publicaciones.length === 0 ? (
+        ) : currentItems.length === 0 ? (
           // Estado vacío
           <div className="text-center py-20">
             <div className="flex justify-center mb-4 text-gray-400">
               {filtro === 'DUDA' ? <FontAwesomeIcon icon={faCircleQuestion} className="w-16 h-16" /> : filtro === 'INFO' ? <FontAwesomeIcon icon={faInfoCircle} className="w-16 h-16" /> : <FontAwesomeIcon icon={faClipboardList} className="w-16 h-16" />}
             </div>
             <h3 className="text-lg font-bold text-gray-700 mb-1">
-              {filtro ? `No hay anuncios de tipo "${TIPO_CONFIG[filtro].label}"` : 'No hay anuncios'}
+              {searchTerm 
+                ? 'No se encontraron anuncios que coincidan con tu búsqueda'
+                : filtro 
+                  ? `No hay anuncios de tipo "${TIPO_CONFIG[filtro].label}"` 
+                  : 'No hay anuncios'}
             </h3>
             <p className="text-sm text-gray-400 mb-6">
-              {isAuthenticated ? '¡Sé el primero en publicar!' : 'Inicia sesión para publicar.'}
+              {!searchTerm && (isAuthenticated ? '¡Sé el primero en publicar!' : 'Inicia sesión para publicar.')}
             </p>
-            <button
-              onClick={handlePublicar}
-              className="inline-flex items-center gap-2 bg-forest-green text-white font-bold
-                         px-6 py-3 rounded-2xl shadow-md hover:bg-green-700 transition-all text-sm"
-            >
-              <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
-              Publicar anuncio
-            </button>
+            {!searchTerm && (
+              <button
+                onClick={handlePublicar}
+                className="inline-flex items-center gap-2 bg-forest-green text-white font-bold
+                           px-6 py-3 rounded-2xl shadow-md hover:bg-green-700 transition-all text-sm"
+              >
+                <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
+                Publicar anuncio
+              </button>
+            )}
           </div>
         ) : (
-          // Grid de tarjetas
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {publicaciones.map(pub => (
-              <TarjetaAnuncio
-                key={pub.id}
-                pub={pub}
-                usuarioId={user?.id}
-                esAdmin={esAdmin}
-                onEliminar={handleEliminar}
-                onVerDetalle={setPublicacionDetalle}
-                onEditar={handleEditar}
-              />
-            ))}
-          </div>
+          <>
+            {/* Grid de tarjetas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {currentItems.map(pub => (
+                <TarjetaAnuncio
+                  key={pub.id}
+                  pub={pub}
+                  usuarioId={user?.id}
+                  esAdmin={esAdmin}
+                  onEliminar={handleEliminar}
+                  onVerDetalle={setPublicacionDetalle}
+                  onEditar={handleEditar}
+                />
+              ))}
+            </div>
+
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-sm font-bold text-gray-600 px-4">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <FontAwesomeIcon icon={faChevronRight} className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -596,7 +665,7 @@ const TablonAnuncios = () => {
             {/* Body */}
             <div className="p-6 space-y-4">
               {publicacionDetalle.fotoUrl && (
-                <img src={publicacionDetalle.fotoUrl} alt={publicacionDetalle.titulo} className="w-full h-48 object-cover rounded-xl" />
+                <img src={publicacionDetalle.fotoUrl} alt={publicacionDetalle.titulo} className="w-full h-60 object-cover rounded-xl" />
               )}
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">

@@ -4,7 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faTrash, faEdit, faPlus, faMagnifyingGlass, faRightFromBracket, faLocationDot, 
   faFileLines, faShoppingBag, faCalendarAlt, faShieldHalved, faRotateRight,
-  faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faLocationArrow, faCircleQuestion, faInfoCircle, faUsers
+  faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faLocationArrow, faCircleQuestion, faInfoCircle, faUsers,
+  faBan, faLockOpen, faUserShield
 } from '@fortawesome/free-solid-svg-icons';
 import { useUserStore } from '../../estado/estadoUsuario';
 import { useUiStore } from '../../estado/estadoUi';
@@ -18,7 +19,7 @@ import {
   fetchPublicacionesAdmin, eliminarPublicacionAdmin, type PublicacionTablon,
   fetchAnunciosAdmin, eliminarAnuncioAdmin, type AnuncioMercado,
   fetchEventosAdmin, eliminarEventoAdmin, type Evento,
-  fetchUsuariosAdmin, cambiarRolUsuarioAdmin, type UsuarioAdmin
+  fetchUsuariosAdmin, cambiarRolUsuarioAdmin, bloquearUsuarioAdmin, eliminarUsuarioAdmin, type UsuarioAdmin
 } from '../../servicios/servicioAdmin';
 
 // ── VISTA PRINCIPAL DEL DASHBOARD ─────────────────────────────────────────────
@@ -136,6 +137,31 @@ const DashboardAdmin = () => {
         cargarDatos();
       } catch (err) {
         addToast('No se pudo cambiar el rol.', 'error');
+      }
+    }
+  };
+
+  const handleBloquearUsuario = async (id: number, nombre: string, bloqueado: boolean) => {
+    const accion = bloqueado ? 'desbloquear' : 'bloquear';
+    if (window.confirm(`¿Estás seguro de que quieres ${accion} al usuario "${nombre}"?`)) {
+      try {
+        await bloquearUsuarioAdmin(id, !bloqueado);
+        addToast(`Usuario ${bloqueado ? 'desbloqueado' : 'bloqueado'} correctamente.`, 'success');
+        cargarDatos();
+      } catch (err) {
+        addToast('No se pudo actualizar el estado del usuario.', 'error');
+      }
+    }
+  };
+
+  const handleEliminarUsuario = async (id: number, nombre: string) => {
+    if (window.confirm(`¿Seguro que deseas ELIMINAR permanentemente al usuario "${nombre}"? Esta acción no se puede deshacer.`)) {
+      try {
+        await eliminarUsuarioAdmin(id);
+        addToast('Usuario eliminado permanentemente.', 'success');
+        cargarDatos();
+      } catch (err) {
+        addToast('No se pudo eliminar el usuario.', 'error');
       }
     }
   };
@@ -534,27 +560,28 @@ const DashboardAdmin = () => {
 
               {/* USUARIOS TABLE */}
               {activeTab === 'usuarios' && (
-                <table className="w-full text-left border-collapse min-w-[700px]">
+                <table className="w-full text-left border-collapse min-w-[800px]">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-[10px] font-bold uppercase tracking-wider">
                       <th className="px-6 py-3.5">ID</th>
                       <th className="px-6 py-3.5">Nombre</th>
                       <th className="px-6 py-3.5">Email</th>
                       <th className="px-6 py-3.5 text-center">Rol</th>
+                      <th className="px-6 py-3.5 text-center">Estado</th>
                       <th className="px-6 py-3.5 text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
                     {filtrarUsuarios.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center py-10 text-gray-400 font-medium">No se han encontrado usuarios.</td>
+                        <td colSpan={6} className="text-center py-10 text-gray-400 font-medium">No se han encontrado usuarios.</td>
                       </tr>
                     ) : (
                       filtrarUsuarios.map(u => (
-                        <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
+                        <tr key={u.id} className={`hover:bg-gray-50/50 transition-colors ${u.bloqueado ? 'bg-red-50/30' : ''}`}>
                           <td className="px-6 py-3 font-semibold text-gray-500">{u.id}</td>
-                          <td className="px-6 py-3 font-semibold text-gray-900 max-w-[200px] truncate">{u.nombre}</td>
-                          <td className="px-6 py-3 text-xs text-gray-600 max-w-[200px] truncate">{u.email}</td>
+                          <td className="px-6 py-3 font-semibold text-gray-900 max-w-[180px] truncate">{u.nombre}</td>
+                          <td className="px-6 py-3 text-xs text-gray-600 max-w-[180px] truncate">{u.email}</td>
                           <td className="px-6 py-3 text-center">
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold ${
                               u.rol === 'ROL_ADMIN' 
@@ -564,15 +591,50 @@ const DashboardAdmin = () => {
                               {u.rol === 'ROL_ADMIN' ? 'Administrador' : 'Usuario'}
                             </span>
                           </td>
+                          <td className="px-6 py-3 text-center">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold ${
+                              u.bloqueado
+                                ? 'bg-red-50 text-red-700 border border-red-100'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                            }`}>
+                              {u.bloqueado ? 'Bloqueado' : 'Activo'}
+                            </span>
+                          </td>
                           <td className="px-6 py-3 text-right">
-                            {u.rol !== 'ROL_ADMIN' && (
-                              <button 
-                                onClick={() => handleHacerAdmin(u.id)}
-                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-forest-green border border-forest-green/30 hover:bg-forest-green hover:text-white transition-colors"
-                              >
-                                Hacer Admin
-                              </button>
-                            )}
+                            <div className="flex items-center justify-end gap-2">
+                              {u.rol !== 'ROL_ADMIN' && (
+                                <>
+                                  {/* Hacer Admin */}
+                                  <button 
+                                    onClick={() => handleHacerAdmin(u.id)}
+                                    title="Dar permisos de administrador"
+                                    className="p-1.5 rounded-lg text-purple-600 hover:bg-purple-50 transition-colors"
+                                  >
+                                    <FontAwesomeIcon icon={faUserShield} className="w-4 h-4" />
+                                  </button>
+                                  {/* Bloquear / Desbloquear */}
+                                  <button 
+                                    onClick={() => handleBloquearUsuario(u.id, u.nombre, u.bloqueado)}
+                                    title={u.bloqueado ? 'Desbloquear usuario' : 'Bloquear usuario'}
+                                    className={`p-1.5 rounded-lg transition-colors ${
+                                      u.bloqueado
+                                        ? 'text-emerald-600 hover:bg-emerald-50'
+                                        : 'text-amber-500 hover:bg-amber-50'
+                                    }`}
+                                  >
+                                    <FontAwesomeIcon icon={u.bloqueado ? faLockOpen : faBan} className="w-4 h-4" />
+                                  </button>
+                                  {/* Eliminar */}
+                                  <button 
+                                    onClick={() => handleEliminarUsuario(u.id, u.nombre)}
+                                    title="Eliminar usuario permanentemente"
+                                    className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                                  >
+                                    <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))

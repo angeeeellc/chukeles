@@ -35,4 +35,7 @@ public class Usuario {
     private Rol rol;
 
     private String fotoUrl;
+
+    @Builder.Default
+    private boolean bloqueado = false;
 }
