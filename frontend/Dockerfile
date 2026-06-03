@@ -22,5 +22,6 @@ ENV BACKEND_URL=http://chukeles-backend:8080
 EXPOSE 80
 
 CMD sed -i -e 's/listen 80;/listen '"$PORT"';/g' -e 's|BACKEND_URL_PLACEHOLDER|'"$BACKEND_URL"'|g' /etc/nginx/conf.d/default.conf && \
-    sed -i 's/server {/server {\n    resolver 127.0.0.11 8.8.8.8 valid=30s ipv6=off;/g' /etc/nginx/conf.d/default.conf && \
+    RESOLVER=$(awk 'BEGIN{ORS=" "} $1=="nameserver" {print $2}' /etc/resolv.conf) && \
+    sed -i "s/server {/server {\n    resolver $RESOLVER valid=30s ipv6=off;/g" /etc/nginx/conf.d/default.conf && \
     nginx -g 'daemon off;'
