@@ -2,6 +2,29 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGraduationCap, faCode, faPaw } from '@fortawesome/free-solid-svg-icons';
 import Footer from '../componentes/Footer';
 
+const perrosFamilia = [
+  {
+    id: 1,
+    foto: '/familia-canina/perro1.jpg',
+    alt: 'Perrito marrón con ojos especiales',
+  },
+  {
+    id: 2,
+    foto: '/familia-canina/perro2.jpg',
+    alt: 'Perro con su dueño en el salón',
+  },
+  {
+    id: 3,
+    foto: '/familia-canina/perro3.jpg',
+    alt: 'Perro blanco paseando por la calle',
+  },
+  {
+    id: 4,
+    foto: '/familia-canina/perro4.jpg',
+    alt: 'Golden retriever escuchando música',
+  },
+];
+
 const QuienesSomos = () => {
   return (
     <div className="flex-1 w-full overflow-y-auto bg-gray-50 flex flex-col">
@@ -13,7 +36,7 @@ const QuienesSomos = () => {
         </h1>
       </div>
 
-      <div className="max-w-3xl mx-auto px-6 py-12 flex-1">
+      <div className="max-w-3xl mx-auto px-6 py-12 flex-1 w-full">
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 text-gray-700 leading-relaxed text-lg text-center">
           
           <div className="mb-8 flex justify-center">
@@ -55,10 +78,43 @@ const QuienesSomos = () => {
               <li>⚠️ <strong>Los anuncios del tablón, los productos de la tienda y las quedadas</strong> son contenido de <strong>prueba</strong> generado para demostrar las funcionalidades de la aplicación y no corresponden a ofertas o eventos reales.</li>
             </ul>
           </div>
+        </div>
+      </div>
 
+      {/* Sección A nosa familia canina */}
+      <div className="w-full bg-gradient-to-b from-green-50 to-white py-16 px-4">
+        <div className="max-w-5xl mx-auto">
+          {/* Cabecera de sección */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center gap-3 bg-white rounded-full px-6 py-2 shadow-sm border border-green-100 mb-4">
+              <FontAwesomeIcon icon={faPaw} className="text-green-500 text-sm" />
+              <span className="text-sm font-semibold text-green-700 tracking-wide uppercase">La inspiración detrás del proyecto</span>
+              <FontAwesomeIcon icon={faPaw} className="text-green-500 text-sm" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">
+              A nosa familia canina
+            </h2>
+          </div>
+
+          {/* Grid de fotos */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+            {perrosFamilia.map((perro) => (
+              <div
+                key={perro.id}
+                className="rounded-2xl overflow-hidden shadow-md aspect-square bg-gray-100"
+              >
+                <img
+                  src={perro.foto}
+                  alt={perro.alt}
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
+            ))}
+          </div>
 
         </div>
       </div>
+
       <Footer />
     </div>
   );
