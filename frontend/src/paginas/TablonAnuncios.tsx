@@ -451,9 +451,10 @@ const TablonAnuncios = () => {
   let pubsFiltradas = publicaciones;
   if (searchTerm.trim()) {
     const q = searchTerm.toLowerCase();
-    pubsFiltradas = pubsFiltradas.filter(p => 
-      p.titulo.toLowerCase().includes(q) || 
-      p.contenido.toLowerCase().includes(q)
+    pubsFiltradas = pubsFiltradas.filter(p =>
+      p.titulo.toLowerCase().includes(q) ||
+      p.contenido.toLowerCase().includes(q) ||
+      (p.autorNombre && p.autorNombre.toLowerCase().includes(q))
     );
   }
 
@@ -521,7 +522,7 @@ const TablonAnuncios = () => {
             <FontAwesomeIcon icon={faSearch} className="absolute left-3 text-gray-400 w-3.5 h-3.5" />
             <input 
               type="text" 
-              placeholder="Buscar..." 
+              placeholder="Buscar anuncio o usuario..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent w-40 sm:w-64 transition-all"

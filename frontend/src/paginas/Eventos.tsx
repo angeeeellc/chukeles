@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faPlus, faTrash, faXmark, faLocationDot, faUsers, faCalendarAlt, faClock,
   faSpinner, faRotateRight, faAlignLeft, faFont, faCheckCircle, faDog,
-  faSearch, faChevronLeft, faChevronRight
+  faSearch, faChevronLeft, faChevronRight, faFilter
 } from '@fortawesome/free-solid-svg-icons';
 import { useUserStore } from '../estado/estadoUsuario';
 import { useUiStore } from '../estado/estadoUi';
@@ -384,6 +384,8 @@ const Eventos = () => {
   const [eventoEditar, setEventoEditar] = useState<Evento | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [filtroFechaDesde, setFiltroFechaDesde] = useState('');
+  const [filtroFechaHasta, setFiltroFechaHasta] = useState('');
 
   const esAdmin = user?.role === 'ROL_ADMIN';
 
@@ -400,7 +402,7 @@ const Eventos = () => {
   };
 
   useEffect(() => { cargar(); setCurrentPage(1); }, []);
-  useEffect(() => { setCurrentPage(1); }, [searchTerm]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, filtroFechaDesde, filtroFechaHasta]);
 
   const handleOrganizar = () => {
     if (!isAuthenticated) { navigate('/iniciar-sesion'); return; }
@@ -463,13 +465,23 @@ const Eventos = () => {
 
   if (searchTerm.trim()) {
     const q = searchTerm.toLowerCase();
-    const matches = (e: Evento) => 
-      e.titulo.toLowerCase().includes(q) || 
-      e.ubicacion.toLowerCase().includes(q) || 
-      (e.descripcion && e.descripcion.toLowerCase().includes(q));
-    
+    const matches = (e: Evento) =>
+      e.titulo.toLowerCase().includes(q) ||
+      e.ubicacion.toLowerCase().includes(q) ||
+      (e.descripcion && e.descripcion.toLowerCase().includes(q)) ||
+      (e.autorNombre && e.autorNombre.toLowerCase().includes(q));
+
     eventosProximos = eventosProximos.filter(matches);
     eventosPasados = eventosPasados.filter(matches);
+  }
+
+  if (filtroFechaDesde) {
+    eventosProximos = eventosProximos.filter(e => e.fecha >= filtroFechaDesde);
+    eventosPasados = eventosPasados.filter(e => e.fecha >= filtroFechaDesde);
+  }
+  if (filtroFechaHasta) {
+    eventosProximos = eventosProximos.filter(e => e.fecha <= filtroFechaHasta);
+    eventosPasados = eventosPasados.filter(e => e.fecha <= filtroFechaHasta);
   }
 
   const itemsPerPage = 6;
@@ -523,25 +535,53 @@ const Eventos = () => {
         </div>
       </div>
 
-      {/* Barra de recarga y buscador */}
+      {/* Barra de recarga, buscador y filtro de fecha */}
       <div className="bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+        <div className="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs font-bold text-gray-400">
               {cargando ? 'Cargando...' : `${eventosProximos.length} quedada${eventosProximos.length !== 1 ? 's' : ''} próxima${eventosProximos.length !== 1 ? 's' : ''}`}
             </span>
-            {/* Buscador */}
+            {/* Buscador (nombre o usuario) */}
             <div className="relative flex items-center shrink-0">
               <FontAwesomeIcon icon={faSearch} className="absolute left-3 text-gray-400 w-3.5 h-3.5" />
-              <input 
-                type="text" 
-                placeholder="Buscar quedada..." 
+              <input
+                type="text"
+                placeholder="Buscar quedada o usuario..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent w-40 sm:w-64 transition-all"
+                className="pl-9 pr-8 py-1.5 rounded-full text-xs font-semibold border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent w-44 sm:w-60 transition-all"
               />
               {searchTerm && (
                 <button onClick={() => setSearchTerm('')} className="absolute right-3 text-gray-400 hover:text-gray-600">
+                  <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+            {/* Filtro de fecha */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <FontAwesomeIcon icon={faFilter} className="w-3 h-3 text-gray-400" />
+              <span className="text-xs text-gray-400 font-semibold">Desde</span>
+              <input
+                type="date"
+                value={filtroFechaDesde}
+                onChange={e => setFiltroFechaDesde(e.target.value)}
+                className="px-2 py-1 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent transition-all"
+              />
+              <span className="text-xs text-gray-400 font-semibold">Hasta</span>
+              <input
+                type="date"
+                value={filtroFechaHasta}
+                min={filtroFechaDesde || undefined}
+                onChange={e => setFiltroFechaHasta(e.target.value)}
+                className="px-2 py-1 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent transition-all"
+              />
+              {(filtroFechaDesde || filtroFechaHasta) && (
+                <button
+                  onClick={() => { setFiltroFechaDesde(''); setFiltroFechaHasta(''); }}
+                  className="text-gray-400 hover:text-red-500 transition-colors"
+                  title="Limpiar filtro de fecha"
+                >
                   <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
                 </button>
               )}

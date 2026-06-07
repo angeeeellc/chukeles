@@ -496,9 +496,10 @@ const Mercado = () => {
 
   if (searchTerm.trim()) {
     const q = searchTerm.toLowerCase();
-    anunciosFiltrados = anunciosFiltrados.filter(a => 
-      a.titulo.toLowerCase().includes(q) || 
-      (a.descripcion && a.descripcion.toLowerCase().includes(q))
+    anunciosFiltrados = anunciosFiltrados.filter(a =>
+      a.titulo.toLowerCase().includes(q) ||
+      (a.descripcion && a.descripcion.toLowerCase().includes(q)) ||
+      (a.autorNombre && a.autorNombre.toLowerCase().includes(q))
     );
   }
 
@@ -591,7 +592,7 @@ const Mercado = () => {
             <FontAwesomeIcon icon={faSearch} className="absolute left-3 text-gray-400 w-3.5 h-3.5" />
             <input 
               type="text" 
-              placeholder="Buscar anuncios..." 
+              placeholder="Buscar anuncios o usuario..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent w-40 sm:w-64 transition-all"
