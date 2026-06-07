@@ -457,7 +457,7 @@ const TablonAnuncios = () => {
     );
   }
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 6;
   const totalPages = Math.max(1, Math.ceil(pubsFiltradas.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentItems = pubsFiltradas.slice(startIndex, startIndex + itemsPerPage);

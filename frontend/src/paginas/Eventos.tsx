@@ -472,7 +472,7 @@ const Eventos = () => {
     eventosPasados = eventosPasados.filter(matches);
   }
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 6;
   const totalPages = Math.max(1, Math.ceil(eventosProximos.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentProximas = eventosProximos.slice(startIndex, startIndex + itemsPerPage);
