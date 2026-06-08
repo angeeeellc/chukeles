@@ -386,6 +386,7 @@ const Eventos = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filtroFechaDesde, setFiltroFechaDesde] = useState('');
   const [filtroFechaHasta, setFiltroFechaHasta] = useState('');
+  const [tabActivo, setTabActivo] = useState<'proximas' | 'pasadas'>('proximas');
 
   const esAdmin = user?.role === 'ROL_ADMIN';
 
@@ -402,7 +403,7 @@ const Eventos = () => {
   };
 
   useEffect(() => { cargar(); setCurrentPage(1); }, []);
-  useEffect(() => { setCurrentPage(1); }, [searchTerm, filtroFechaDesde, filtroFechaHasta]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, filtroFechaDesde, filtroFechaHasta, tabActivo]);
 
   const handleOrganizar = () => {
     if (!isAuthenticated) { navigate('/iniciar-sesion'); return; }
@@ -485,9 +486,11 @@ const Eventos = () => {
   }
 
   const itemsPerPage = 6;
-  const totalPages = Math.max(1, Math.ceil(eventosProximos.length / itemsPerPage));
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentProximas = eventosProximos.slice(startIndex, startIndex + itemsPerPage);
+  const eventosActivos = tabActivo === 'proximas' ? eventosProximos : eventosPasados;
+  const totalPages = Math.max(1, Math.ceil(eventosActivos.length / itemsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage;
+  const currentEventos = eventosActivos.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="h-full w-full overflow-y-auto bg-gray-50">
@@ -535,63 +538,107 @@ const Eventos = () => {
         </div>
       </div>
 
-      {/* Barra de recarga, buscador y filtro de fecha */}
-      <div className="bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs font-bold text-gray-400">
-              {cargando ? 'Cargando...' : `${eventosProximos.length} quedada${eventosProximos.length !== 1 ? 's' : ''} próxima${eventosProximos.length !== 1 ? 's' : ''}`}
-            </span>
-            {/* Buscador (nombre o usuario) */}
-            <div className="relative flex items-center shrink-0">
-              <FontAwesomeIcon icon={faSearch} className="absolute left-3 text-gray-400 w-3.5 h-3.5" />
-              <input
-                type="text"
-                placeholder="Buscar quedada o usuario..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-8 py-1.5 rounded-full text-xs font-semibold border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent w-44 sm:w-60 transition-all"
-              />
-              {searchTerm && (
-                <button onClick={() => setSearchTerm('')} className="absolute right-3 text-gray-400 hover:text-gray-600">
-                  <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-            {/* Filtro de fecha */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <FontAwesomeIcon icon={faFilter} className="w-3 h-3 text-gray-400" />
-              <span className="text-xs text-gray-400 font-semibold">Desde</span>
-              <input
-                type="date"
-                value={filtroFechaDesde}
-                onChange={e => setFiltroFechaDesde(e.target.value)}
-                className="px-2 py-1 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent transition-all"
-              />
-              <span className="text-xs text-gray-400 font-semibold">Hasta</span>
-              <input
-                type="date"
-                value={filtroFechaHasta}
-                min={filtroFechaDesde || undefined}
-                onChange={e => setFiltroFechaHasta(e.target.value)}
-                className="px-2 py-1 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent transition-all"
-              />
-              {(filtroFechaDesde || filtroFechaHasta) && (
-                <button
-                  onClick={() => { setFiltroFechaDesde(''); setFiltroFechaHasta(''); }}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
-                  title="Limpiar filtro de fecha"
-                >
-                  <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
-                </button>
-              )}
-            </div>
+      {/* Filtros — igual que Anuncios: barra sticky con pills horizontales */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex gap-2 overflow-x-auto scrollbar-hide items-center justify-start md:justify-start">
+
+          {/* Pill: Próximas */}
+          <button
+            id="filtro-proximas"
+            onClick={() => setTabActivo('proximas')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all shrink-0 ${
+              tabActivo === 'proximas'
+                ? 'bg-forest-green text-white border-forest-green shadow-sm'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-forest-green hover:text-forest-green'
+            }`}
+          >
+            <FontAwesomeIcon icon={faCalendarAlt} className="w-3.5 h-3.5" />
+            Próximas
+            {!cargando && (
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                tabActivo === 'proximas' ? 'bg-white/30 text-white' : 'bg-green-100 text-forest-green'
+              }`}>
+                {eventosProximos.length}
+              </span>
+            )}
+          </button>
+
+          {/* Pill: Pasadas */}
+          <button
+            id="filtro-pasadas"
+            onClick={() => setTabActivo('pasadas')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all shrink-0 ${
+              tabActivo === 'pasadas'
+                ? 'bg-gray-700 text-white border-gray-700 shadow-sm'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <FontAwesomeIcon icon={faRotateRight} className="w-3.5 h-3.5" />
+            Pasadas
+            {!cargando && (
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                tabActivo === 'pasadas' ? 'bg-white/30 text-white' : 'bg-gray-100 text-gray-600'
+              }`}>
+                {eventosPasados.length}
+              </span>
+            )}
+          </button>
+
+          {/* Separador */}
+          <div className="w-px h-5 bg-gray-200 mx-1 shrink-0" />
+
+          {/* Buscador */}
+          <div className="relative flex items-center shrink-0">
+            <FontAwesomeIcon icon={faSearch} className="absolute left-3 text-gray-400 w-3.5 h-3.5" />
+            <input
+              type="text"
+              placeholder="Buscar quedada o usuario..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-8 py-1.5 rounded-full text-xs font-semibold border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent w-40 sm:w-56 transition-all"
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')} className="absolute right-3 text-gray-400 hover:text-gray-600">
+                <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
+              </button>
+            )}
           </div>
+
+          {/* Filtro de fecha */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <FontAwesomeIcon icon={faFilter} className="w-3 h-3 text-gray-400" />
+            <span className="text-xs text-gray-400 font-semibold">Desde</span>
+            <input
+              type="date"
+              value={filtroFechaDesde}
+              onChange={e => setFiltroFechaDesde(e.target.value)}
+              className="px-2 py-1 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent transition-all"
+            />
+            <span className="text-xs text-gray-400 font-semibold">Hasta</span>
+            <input
+              type="date"
+              value={filtroFechaHasta}
+              min={filtroFechaDesde || undefined}
+              onChange={e => setFiltroFechaHasta(e.target.value)}
+              className="px-2 py-1 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent transition-all"
+            />
+            {(filtroFechaDesde || filtroFechaHasta) && (
+              <button
+                onClick={() => { setFiltroFechaDesde(''); setFiltroFechaHasta(''); }}
+                className="text-gray-400 hover:text-red-500 transition-colors"
+                title="Limpiar filtro de fecha"
+              >
+                <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+
+          {/* Recargar */}
           <button
             onClick={cargar}
             disabled={cargando}
-            className="p-2 rounded-full border border-gray-100 text-forest-green hover:bg-green-50 transition-colors"
-            title="Recargar"
+            title="Recargar quedadas"
+            className="shrink-0 ml-auto p-2 rounded-full border border-gray-100 text-forest-green hover:bg-green-50 transition-colors bg-white"
           >
             <FontAwesomeIcon icon={faRotateRight} className={`w-3.5 h-3.5 ${cargando ? 'animate-spin' : ''}`} />
           </button>
@@ -604,24 +651,34 @@ const Eventos = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => <SkeletonEvento key={i} />)}
           </div>
-        ) : eventosProximos.length === 0 ? (
+        ) : eventosActivos.length === 0 ? (
           <div className="text-center py-20">
             <FontAwesomeIcon icon={faDog} className="w-16 h-16 text-forest-green/50 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-gray-700 mb-1">No hay quedadas programadas</h3>
-            <p className="text-sm text-gray-400 mb-6">¡Organiza la primera quedada canina!</p>
-            <button
-              onClick={handleOrganizar}
-              className="inline-flex items-center gap-2 bg-forest-green text-white font-bold px-6 py-3 rounded-2xl shadow-md hover:bg-green-700 transition-all text-sm"
-            >
-              <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
-              Organizar quedada
-            </button>
+            {tabActivo === 'proximas' ? (
+              <>
+                <h3 className="text-lg font-bold text-gray-700 mb-1">No hay quedadas programadas</h3>
+                <p className="text-sm text-gray-400 mb-6">¡Organiza la primera quedada canina!</p>
+                <button
+                  onClick={handleOrganizar}
+                  className="inline-flex items-center gap-2 bg-forest-green text-white font-bold px-6 py-3 rounded-2xl shadow-md hover:bg-green-700 transition-all text-sm"
+                >
+                  <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
+                  Organizar quedada
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-bold text-gray-700 mb-1">No hay quedadas pasadas</h3>
+                <p className="text-sm text-gray-400">Aquí aparecerán las quedadas que ya han finalizado.</p>
+              </>
+            )}
           </div>
         ) : (
           <>
-            {/* Próximas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {currentProximas.map(e => (
+            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${
+              tabActivo === 'pasadas' ? 'opacity-80' : ''
+            }`}>
+              {currentEventos.map(e => (
                 <TarjetaEvento
                   key={e.id}
                   evento={e}
@@ -641,45 +698,22 @@ const Eventos = () => {
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-8">
                 <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(Math.max(1, safeCurrentPage - 1))}
+                  disabled={safeCurrentPage === 1}
                   className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <FontAwesomeIcon icon={faChevronLeft} className="w-3.5 h-3.5" />
                 </button>
                 <span className="text-sm font-bold text-gray-600 px-4">
-                  Página {currentPage} de {totalPages}
+                  Página {safeCurrentPage} de {totalPages}
                 </span>
                 <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(Math.min(totalPages, safeCurrentPage + 1))}
+                  disabled={safeCurrentPage === totalPages}
                   className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <FontAwesomeIcon icon={faChevronRight} className="w-3.5 h-3.5" />
                 </button>
-              </div>
-            )}
-
-            {/* Pasadas */}
-            {eventosPasados.length > 0 && currentPage === 1 && (
-              <div className="mt-10 pt-6 border-t border-gray-100">
-                <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Quedadas pasadas</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-70 hover:opacity-100 transition-opacity">
-                  {eventosPasados.slice(0, 4).map(e => (
-                    <TarjetaEvento
-                      key={e.id}
-                      evento={e}
-                      usuarioId={user?.id}
-                      esAdmin={esAdmin}
-                      cargandoId={cargandoId}
-                      onUnirse={handleUnirse}
-                      onSalir={handleSalir}
-                      onEliminar={handleEliminar}
-                      onVerDetalle={setEventoDetalle}
-                      onEditar={handleEditar}
-                    />
-                  ))}
-                </div>
               </div>
             )}
           </>

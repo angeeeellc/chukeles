@@ -505,7 +505,8 @@ const Mercado = () => {
 
   const itemsPerPage = 8;
   const totalPages = Math.max(1, Math.ceil(anunciosFiltrados.length / itemsPerPage));
-  const startIndex = (currentPage - 1) * itemsPerPage;
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage;
   const currentItems = anunciosFiltrados.slice(startIndex, startIndex + itemsPerPage);
 
   return (
@@ -693,18 +694,18 @@ const Mercado = () => {
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-8">
                 <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(Math.max(1, safeCurrentPage - 1))}
+                  disabled={safeCurrentPage === 1}
                   className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <FontAwesomeIcon icon={faChevronLeft} className="w-3.5 h-3.5" />
                 </button>
                 <span className="text-sm font-bold text-gray-600 px-4">
-                  Página {currentPage} de {totalPages}
+                  Página {safeCurrentPage} de {totalPages}
                 </span>
                 <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(Math.min(totalPages, safeCurrentPage + 1))}
+                  disabled={safeCurrentPage === totalPages}
                   className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <FontAwesomeIcon icon={faChevronRight} className="w-3.5 h-3.5" />

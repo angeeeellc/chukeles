@@ -10,9 +10,9 @@ TRUNCATE TABLE eventos;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- 1. Carga de usuarios (Especificando ID explícito para consistencia de FKs)
-INSERT INTO usuarios (id, email, contrasena, nombre, telefono, rol, foto_url) VALUES
-(1, 'admin@chukeles.es',   '$2a$12$vdwKm82fWRYBwDxdumH6F.8Y1iYEBfaUxD8Dd.yCIONRDxe5sMCZu', 'Administrador',  '600000000', 'ROL_ADMIN',   NULL),
-(2, 'usuario@chukeles.es', '$2a$12$QOlR2Q1luwRAVg0HuR.b4eWWBWG6.pshhH18iTRiNDDKvK/TUUqRK', 'Usuario Prueba', '611111111', 'ROL_USUARIO', NULL);
+INSERT INTO usuarios (id, email, contrasena, nombre, telefono, rol, foto_url, bloqueado) VALUES
+(1, 'admin@chukeles.es',   '$2a$12$vdwKm82fWRYBwDxdumH6F.8Y1iYEBfaUxD8Dd.yCIONRDxe5sMCZu', 'Administrador',  '600000000', 'ROL_ADMIN',   NULL, false),
+(2, 'usuario@chukeles.es', '$2a$12$QOlR2Q1luwRAVg0HuR.b4eWWBWG6.pshhH18iTRiNDDKvK/TUUqRK', 'Usuario Prueba', '611111111', 'ROL_USUARIO', NULL, false);
 
 -- 2. Carga de lugares
 INSERT INTO lugares (nombre, categoria, direccion, lat, lng, descripcion, telefono, sitio_web, foto_url, aprobado) VALUES
