@@ -1,0 +1,96 @@
+name: CI — Chukeles
+
+# ─────────────────────────────────────────────────
+#  Triggers
+#  · Push a develop
+#  · Pull Requests hacia develop o main
+# ─────────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+
+  # ═══════════════════════════════════════════════
+  #  JOB 1 — Backend (Java 21 / Maven)
+  # ═══════════════════════════════════════════════
+  backend:
+    name: "Backend · Java 21 · mvnw test"
+    runs-on: ubuntu-latest
+
+    # El perfil por defecto usa H2 en memoria — no necesita MySQL
+    env:
+      SPRING_PROFILES_ACTIVE: default
+      # El secreto JWT ya tiene valor por defecto en application.yml;
+      # lo redefinimos aquí por claridad
+      JWT_SECRETO: ci_test_secret_key_for_github_actions_longer_than_64_chars_2026
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      - name: Dar permisos de ejecución a mvnw
+        working-directory: backend
+        run: chmod +x mvnw
+
+      - name: Compilar y ejecutar tests
+        working-directory: backend
+        run: ./mvnw test --batch-mode --no-transfer-progress
+
+      - name: Publicar resultados de tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/target/surefire-reports/
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════
+  #  JOB 2 — Frontend (Node 20 / Vite build)
+  # ═══════════════════════════════════════════════
+  frontend:
+    name: "Frontend · Node 20 · npm build"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: frontend
+        run: npm install
+
+      - name: Compilar (build de producción)
+        working-directory: frontend
+        env:
+          # Usamos una clave vacía en CI para que Vite compile sin error
+          VITE_API_URL:         http://localhost:8080
+          VITE_GOOGLE_MAPS_KEY: CI_PLACEHOLDER_KEY
+        run: npm run build
+
+      - name: Publicar artefacto del build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 7

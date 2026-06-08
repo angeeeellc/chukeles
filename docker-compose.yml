@@ -1,50 +1,110 @@
 version: '3.8'
 
+# ============================================================
+#  Chukeles — docker-compose.yml
+#  Levanta los tres servicios en orden: mysql → backend → frontend
+#  Uso:
+#    cp .env.example .env   # edita las variables
+#    docker-compose up --build
+# ============================================================
+
 services:
+
+  # ----------------------------------------------------------
+  #  Base de datos MySQL 8
+  # ----------------------------------------------------------
   mysql:
-    image: mysql:8
+    image: mysql:8.0
     container_name: chukeles-db
-    restart: always
+    restart: unless-stopped
     environment:
-      MYSQL_DATABASE: chukeles
+      MYSQL_DATABASE:      ${DB_NAME:-chukeles}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
-      MYSQL_USER: ${DB_USER:-chukeles_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-chukeles_pass}
+      MYSQL_USER:          ${DB_USER:-chukeles_user}
+      MYSQL_PASSWORD:      ${DB_PASSWORD:-chukeles_pass}
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./data/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+      - ./data/seed.sql:/docker-entrypoint-initdb.d/01_seed.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+    networks:
+      - chukeles-net
 
+  # ----------------------------------------------------------
+  #  Backend — Spring Boot 3.3 / Java 21
+  # ----------------------------------------------------------
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: chukeles-backend
-    restart: on-failure
+    restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "${SERVER_PORT:-8080}:8080"
     volumes:
-      - ./uploads:/app/uploads
+      - uploads_data:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/chukeles?allowMultiQueries=true
-      - DB_USER=${DB_USER:-chukeles_user}
-      - DB_PASSWORD=${DB_PASSWORD:-chukeles_pass}
+      SPRING_PROFILES_ACTIVE:        prod
+      SPRING_DATASOURCE_URL:         jdbc:mysql://mysql:3306/${DB_NAME:-chukeles}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Europe/Madrid&allowMultiQueries=true
+      SPRING_DATASOURCE_USERNAME:    ${DB_USER:-chukeles_user}
+      SPRING_DATASOURCE_PASSWORD:    ${DB_PASSWORD:-chukeles_pass}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRETO:                   ${JWT_SECRETO:-chukeles-secreto-super-seguro-para-jwt-minimo-64-caracteres-requeridos-hmac}
+      JWT_EXPIRACION_MS:             ${JWT_EXPIRACION_MS:-86400000}
+      UPLOAD_RUTA:                   /app/uploads
+      SERVER_PORT:                   8080
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/api/categories > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+    networks:
+      - chukeles-net
 
+  # ----------------------------------------------------------
+  #  Frontend — React/Vite + Nginx (multi-stage)
+  # ----------------------------------------------------------
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
       args:
-        - VITE_API_URL=${VITE_API_URL:-http://localhost:8080}
+        VITE_API_URL:          ${VITE_API_URL:-http://localhost:8080}
+        VITE_GOOGLE_MAPS_KEY:  ${VITE_GOOGLE_MAPS_KEY:-}
     container_name: chukeles-frontend
-    restart: on-failure
+    restart: unless-stopped
     ports:
-      - "5173:80"
+      - "${FRONTEND_PORT:-5173}:80"
+    environment:
+      BACKEND_URL: http://chukeles-backend:8080
+    depends_on:
+      - backend
+    networks:
+      - chukeles-net
 
+# ----------------------------------------------------------
+#  Volúmenes persistentes
+# ----------------------------------------------------------
 volumes:
   mysql_data:
+    name: chukeles_mysql_data
+  uploads_data:
+    name: chukeles_uploads
+
+# ----------------------------------------------------------
+#  Red interna
+# ----------------------------------------------------------
+networks:
+  chukeles-net:
+    name: chukeles_network
+    driver: bridge
