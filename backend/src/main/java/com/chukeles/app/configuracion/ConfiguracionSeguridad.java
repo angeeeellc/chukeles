@@ -51,7 +51,6 @@ public class ConfiguracionSeguridad {
                 )
             )
             .authorizeHttpRequests(auth -> auth
-                // ── Rutas públicas ──────────────────────────────────────────
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/lugares/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
@@ -67,12 +66,10 @@ public class ConfiguracionSeguridad {
                     "/v3/api-docs/**",
                     "/h2-console/**"
                 ).permitAll()
-                // ── Rutas de admin (solo ROL_ADMIN) ─────────────────────────
                 .requestMatchers("/api/admin/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.POST,   "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.PUT,    "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/lugares/**").hasAuthority("ROL_ADMIN")
-                // ── Todo lo demás requiere autenticación ────────────────────
                 // DELETE /api/mercado, DELETE /api/eventos, POST /api/eventos/{id}/unirse:
                 // el control de autor vs. admin se delega al servicio correspondiente
                 .anyRequest().authenticated()

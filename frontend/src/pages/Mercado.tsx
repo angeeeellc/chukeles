@@ -7,17 +7,14 @@ import {
   faBone, faBriefcase, faShirt, faCompactDisc, faPills, faCoins, faStore, faUser, faGrip, faPenToSquare,
   faSearch, faChevronLeft, faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
-import { useUserStore } from '../estado/estadoUsuario';
-import { useUiStore } from '../estado/estadoUi';
+import { useUserStore } from '../store/storeUsuario';
+import { useUiStore } from '../store/storeUi';
 import {
   fetchAnuncios, crearAnuncio, actualizarAnuncio, actualizarEstadoAnuncio, eliminarAnuncio,
   type AnuncioMercado, type NuevoAnuncio, type CategoriaMercado, type EstadoMercado
-} from '../servicios/servicioMercado';
-import clienteApi from '../servicios/clienteApi';
-import Footer from '../componentes/Footer';
-
-// ── Constantes ─────────────────────────────────────────────────────────────────
-
+} from '../services/servicioMercado';
+import clienteApi from '../services/clienteApi';
+import Footer from '../components/Footer';
 const CATEGORIAS: { valor: CategoriaMercado; label: string; icon: any }[] = [
   { valor: 'COMIDA',     label: 'Alimentación', icon: faBone },
   { valor: 'ACCESORIOS', label: 'Accesorios',   icon: faBriefcase },
@@ -30,9 +27,6 @@ const CATEGORIAS: { valor: CategoriaMercado; label: string; icon: any }[] = [
 const CATEGORIA_MAP = Object.fromEntries(
   CATEGORIAS.map(c => [c.valor, c])
 ) as Record<CategoriaMercado, typeof CATEGORIAS[0]>;
-
-// ── Utilidades ─────────────────────────────────────────────────────────────────
-
 const formatPrecio = (n: number) =>
   new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(n);
 
@@ -49,9 +43,6 @@ const tiempoRelativo = (fechaStr: string): string => {
   if (diffD < 7) return `hace ${diffD} días`;
   return fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 };
-
-// ── Tarjeta de producto ────────────────────────────────────────────────────────
-
 interface TarjetaProps {
   anuncio: AnuncioMercado;
   usuarioId?: number;
@@ -177,9 +168,6 @@ const TarjetaProducto = ({ anuncio, usuarioId, esAdmin, onEliminar, onToggleEsta
     </article>
   );
 };
-
-// ── Modal de publicación ───────────────────────────────────────────────────────
-
 interface ModalPublicarProps {
   anuncioEditar?: AnuncioMercado | null;
   onClose: () => void;
@@ -401,9 +389,6 @@ const ModalPublicar = ({ anuncioEditar, onClose, onPublicado }: ModalPublicarPro
     </div>
   );
 };
-
-// ── Skeleton ───────────────────────────────────────────────────────────────────
-
 const SkeletonTarjeta = () => (
   <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
     <div className="h-48 bg-gray-100" />
@@ -415,9 +400,6 @@ const SkeletonTarjeta = () => (
     </div>
   </div>
 );
-
-// ── Página principal ───────────────────────────────────────────────────────────
-
 const FILTROS_ESTADO: { label: React.ReactNode; valor: EstadoMercado | null }[] = [
   { label: <><FontAwesomeIcon icon={faGrip} className="w-3.5 h-3.5 inline mr-1" /> Todos</>, valor: null },
   { label: <><FontAwesomeIcon icon={faCheckCircle} className="w-3.5 h-3.5 inline mr-1" /> Disponible</>, valor: 'DISPONIBLE' },

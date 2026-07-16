@@ -32,9 +32,6 @@ import java.util.List;
 public class ControladorLugar {
 
     private final ServicioLugar servicioLugar;
-
-    // ── Rutas públicas ────────────────────────────────────────────────────────
-
     @Operation(summary = "Buscar lugares con filtros opcionales (nombre, categoría, radio)")
     @GetMapping("/api/lugares")
     public ResponseEntity<List<Lugar>> buscar(
@@ -59,9 +56,6 @@ public class ControladorLugar {
     public ResponseEntity<Categoria[]> listarCategorias() {
         return ResponseEntity.ok(Categoria.values());
     }
-
-    // ── Rutas de administración (solo ROL_ADMIN) ──────────────────────────────
-
     @Operation(summary = "Crear un nuevo lugar (admin)", security = @SecurityRequirement(name = "Bearer"))
     @PreAuthorize("hasAuthority('ROL_ADMIN')")
     @PostMapping("/api/lugares")

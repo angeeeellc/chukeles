@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { buscarLugares, type Lugar, type FiltrosLugar } from '../servicios/servicioLugar';
+import { buscarLugares, type Lugar, type FiltrosLugar } from '../services/servicioLugar';
 
 interface PlaceState {
   lugares: Lugar[];

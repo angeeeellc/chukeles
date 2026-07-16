@@ -117,9 +117,6 @@ public class ServicioAnuncioMercado {
         validarAutorOAdmin(anuncio, emailUsuario);
         repositorioAnuncioMercado.deleteById(id);
     }
-
-    // ── helpers ────────────────────────────────────────────────────────────────
-
     private void validarAutorOAdmin(AnuncioMercado anuncio, String emailUsuario) {
         Usuario usuario = repositorioUsuario.findByEmail(emailUsuario)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado: " + emailUsuario));

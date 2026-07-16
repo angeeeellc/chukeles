@@ -6,8 +6,6 @@ const clienteApi = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-// ── Request interceptor: inyecta el token JWT si existe ──────────────────────
 clienteApi.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -18,21 +16,19 @@ clienteApi.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
-// ── Response interceptor: manejo global de errores HTTP ─────────────────────
 clienteApi.interceptors.response.use(
   (response) => response,
   async (error) => {
     const status = error.response?.status;
 
     // Importación dinámica para evitar dependencias circulares
-    const { useUiStore } = await import('../estado/estadoUi');
+    const { useUiStore } = await import('../store/storeUi');
     const addToast = useUiStore.getState().addToast;
 
     if (status === 401) {
       // Token expirado o inválido → limpiar sesión
       localStorage.removeItem('token');
-      const { useUserStore } = await import('../estado/estadoUsuario');
+      const { useUserStore } = await import('../store/storeUsuario');
       useUserStore.getState().logout();
       addToast('Tu sesión ha expirado. Por favor, vuelve a acceder.', 'error');
       window.location.href = '/iniciar-sesion';

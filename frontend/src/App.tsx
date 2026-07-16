@@ -1,22 +1,20 @@
 import { BrowserRouter as Router, Routes, Route, NavLink, Link, useNavigate } from 'react-router-dom'
-import Inicio from './paginas/Inicio'
-import DetalleLugar from './paginas/DetalleLugar'
-import Eventos from './paginas/Eventos'
-import TablonAnuncios from './paginas/TablonAnuncios'
-import Mercado from './paginas/Mercado'
-import IniciarSesion from './paginas/auth/IniciarSesion'
-import Registro from './paginas/auth/Registro'
-import PanelAdministrador from './paginas/admin/PanelAdministrador'
-import QuienesSomos from './paginas/QuienesSomos'
-import NoEncontrado from './paginas/NoEncontrado'
-import ContenedorNotificaciones from './componentes/Notificacion'
-import { useUserStore } from './estado/estadoUsuario'
-import { useUiStore } from './estado/estadoUi'
+import Inicio from './pages/Inicio'
+import DetalleLugar from './pages/DetalleLugar'
+import Eventos from './pages/Eventos'
+import TablonAnuncios from './pages/TablonAnuncios'
+import Mercado from './pages/Mercado'
+import IniciarSesion from './pages/auth/IniciarSesion'
+import Registro from './pages/auth/Registro'
+import PanelAdministrador from './pages/admin/PanelAdministrador'
+import QuienesSomos from './pages/QuienesSomos'
+import NoEncontrado from './pages/NoEncontrado'
+import ContenedorNotificaciones from './components/Notificacion'
+import { useUserStore } from './store/storeUsuario'
+import { useUiStore } from './store/storeUi'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faBars, faXmark, faCog, faMap, faDog, faClipboardList, faStore, faHandSparkles } from '@fortawesome/free-solid-svg-icons'
 import { useState } from 'react'
-
-// ── Navbar interno (necesita acceso a useNavigate) ────────────────────────────
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useUserStore()
   const { addToast } = useUiStore()
@@ -165,8 +163,6 @@ const Navbar = () => {
     </nav>
   )
 }
-
-// ── App raíz ──────────────────────────────────────────────────────────────────
 function App() {
   return (
     <Router>

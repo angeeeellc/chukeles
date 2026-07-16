@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash, faUserPlus, faDog } from '@fortawesome/free-solid-svg-icons';
-import { registrarApi } from '../../servicios/servicioAutenticacion';
-import { useUserStore } from '../../estado/estadoUsuario';
-import { useUiStore } from '../../estado/estadoUi';
+import { faEye, faEyeSlash, faRightToBracket, faPaw } from '@fortawesome/free-solid-svg-icons';
+import { loginApi } from '../../services/servicioAutenticacion';
+import { useUserStore } from '../../store/storeUsuario';
+import { useUiStore } from '../../store/storeUi';
 
-const Registro = () => {
+const IniciarSesion = () => {
   const navigate = useNavigate();
   const { login } = useUserStore();
   const { addToast } = useUiStore();
 
-  const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,25 +18,24 @@ const Registro = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre || !email || !password) {
+    if (!email || !password) {
       addToast('Por favor, rellena todos los campos.', 'info');
-      return;
-    }
-    if (password.length < 6) {
-      addToast('La contraseña debe tener al menos 6 caracteres.', 'info');
       return;
     }
 
     setCargando(true);
     try {
-      const resp = await registrarApi(nombre, email, password);
+      const resp = await loginApi(email, password);
       login({ id: resp.id, email: resp.email, name: resp.nombre, role: resp.rol }, resp.token);
-      addToast(`¡Bienvenido a Chukeles, ${resp.nombre}!`, 'success');
+      addToast(`¡Bienvenido de vuelta, ${resp.nombre}!`, 'success');
       navigate('/');
     } catch (err: any) {
-      const msg = err.response?.status === 409
-        ? 'Ya existe una cuenta con ese email.'
-        : 'Error al registrarse. Inténtalo de nuevo.';
+      let msg = 'Error al acceder. Inténtalo de nuevo.';
+      if (err.response?.status === 400 && typeof err.response.data === 'string') {
+        msg = err.response.data; // "Tu cuenta ha sido bloqueada por un administrador."
+      } else if (err.response?.status === 401) {
+        msg = 'Email o contraseña incorrectos.';
+      }
       addToast(msg, 'error');
     } finally {
       setCargando(false);
@@ -52,39 +50,21 @@ const Registro = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-forest-green rounded-2xl mb-4 shadow-lg">
-              <FontAwesomeIcon icon={faDog} className="w-8 h-8 text-white" />
+              <FontAwesomeIcon icon={faPaw} className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-black text-gray-900">Únete a Chukeles</h1>
-            <p className="text-sm text-gray-500 mt-1">Gratis para siempre • A Coruña con tu perro</p>
+            <h1 className="text-2xl font-black text-gray-900">Acceder a Chukeles</h1>
+            <p className="text-sm text-gray-500 mt-1">A Coruña con tu perro</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {/* Nombre */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="register-nombre" className="text-sm font-semibold text-gray-700">
-                Nombre
-              </label>
-              <input
-                id="register-nombre"
-                type="text"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                placeholder="Tu nombre"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent
-                           transition-all placeholder-gray-400"
-                autoComplete="name"
-              />
-            </div>
-
             {/* Email */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="register-email" className="text-sm font-semibold text-gray-700">
+              <label htmlFor="login-email" className="text-sm font-semibold text-gray-700">
                 Correo electrónico
               </label>
               <input
-                id="register-email"
+                id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -98,21 +78,20 @@ const Registro = () => {
 
             {/* Password */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="register-password" className="text-sm font-semibold text-gray-700">
+              <label htmlFor="login-password" className="text-sm font-semibold text-gray-700">
                 Contraseña
-                <span className="text-gray-400 font-normal ml-1">(mín. 6 caracteres)</span>
               </label>
               <div className="relative">
                 <input
-                  id="register-password"
+                  id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Elige una contraseña"
+                  placeholder="Tu contraseña"
                   className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 text-sm
                              focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent
                              transition-all placeholder-gray-400"
-                  autoComplete="new-password"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -127,7 +106,7 @@ const Registro = () => {
 
             {/* Submit */}
             <button
-              id="register-submit"
+              id="login-submit"
               type="submit"
               disabled={cargando}
               className="w-full flex items-center justify-center gap-2 bg-forest-green text-white py-3.5 rounded-xl
@@ -137,23 +116,31 @@ const Registro = () => {
               {cargando ? (
                 <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
               ) : (
-                <FontAwesomeIcon icon={faUserPlus} className="w-4 h-4" />
+                <FontAwesomeIcon icon={faRightToBracket} className="w-4 h-4" />
               )}
-              {cargando ? 'Registrando...' : 'Crear cuenta'}
+              {cargando ? 'Accediendo...' : 'Acceder'}
             </button>
           </form>
 
           {/* Footer */}
           <p className="text-center text-sm text-gray-500 mt-6">
-            ¿Ya tienes cuenta?{' '}
-            <Link to="/iniciar-sesion" className="text-forest-green font-semibold hover:underline">
-              Accede aquí
+            ¿No tienes cuenta?{' '}
+            <Link to="/registro" className="text-forest-green font-semibold hover:underline">
+              Regístrate gratis
             </Link>
           </p>
         </div>
+
+        {/* Admin hint */}
+        <p className="text-center text-xs text-gray-400 mt-4">
+          ¿Eres administrador?{' '}
+          <Link to="/admin" className="hover:text-forest-green transition-colors">
+            Accede al panel →
+          </Link>
+        </p>
       </div>
     </div>
   );
 };
 
-export default Registro;
+export default IniciarSesion;

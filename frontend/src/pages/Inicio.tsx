@@ -1,13 +1,11 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
-import { useLugarStore } from '../estado/estadoLugar'
-import type { Lugar } from '../servicios/servicioLugar'
-import ComponenteMapa from '../componentes/ComponenteMapa'
+import { useLugarStore } from '../store/storeLugar'
+import type { Lugar } from '../services/servicioLugar'
+import ComponenteMapa from '../components/ComponenteMapa'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMagnifyingGlass, faLocationDot, faXmark, faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faMugHot, faPaw } from '@fortawesome/free-solid-svg-icons'
-import { useDebounce } from '../ganchos/useDebounce'
+import { useDebounce } from '../hooks/useDebounce'
 import { useNavigate, Link } from 'react-router-dom'
-
-// ── Categorías disponibles ────────────────────────────────────────────────────
 const CATEGORIAS = [
   { valor: 'VETERINARIO', etiqueta: 'Veterinarios',    icon: faHospital },
   { valor: 'PARQUE',      etiqueta: 'Parques',         icon: faTree },
@@ -17,8 +15,6 @@ const CATEGORIAS = [
   { valor: 'ADIESTRAMIENTO', etiqueta: 'Adiest.',      icon: faGraduationCap },
   { valor: 'PET_FRIENDLY', etiqueta: 'Pet Friendly',   icon: faMugHot },
 ]
-
-// ── Skeleton de tarjeta ───────────────────────────────────────────────────────
 const CardSkeleton = () => (
   <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm animate-pulse">
     <div className="w-full h-36 bg-gray-200" />
@@ -44,8 +40,6 @@ const traducirCategoria = (cat: string) => {
   }
   return map[cat?.toUpperCase()] || cat
 }
-
-// ── Componente principal ──────────────────────────────────────────────────────
 const Inicio = () => {
   const navigate = useNavigate()
   const {

@@ -61,7 +61,7 @@ export const actualizarEstadoAnuncio = async (
   id: number,
   estado: EstadoMercado
 ): Promise<AnuncioMercado> => {
-  const res = await clienteApi.put<AnuncioMercado>(`/mercado/${id}/estado`, { estado });
+  const res = await clienteApi.put<AnuncioMercado>(`/mercado/${id}/store`, { estado });
   return res.data;
 };
 

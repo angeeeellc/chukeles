@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/logo.png" alt="Chukeles logo" width="160"/>
+  <!-- Logo eliminado para mantener el repositorio limpio -->
 </p>
 
 <h1 align="center">🐶 Chukeles — A Coruña con tu perro</h1>
@@ -200,7 +200,6 @@ chukeles/
 │   └── nginx.conf            # Configuración Nginx con proxy /api y /uploads
 ├── data/
 │   └── seed.sql              # ~40 lugares reales de A Coruña
-├── docs/                     # Documentación adicional
 ├── uploads/                  # Imágenes subidas (ignorado en Git)
 ├── docker-compose.yml        # Orquestación de los tres servicios
 ├── .env.example              # Plantilla de variables de entorno

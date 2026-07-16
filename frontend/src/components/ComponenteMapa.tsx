@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from '@react-google-maps/api';
-import { useLugarStore } from '../estado/estadoLugar';
-import type { Lugar } from '../servicios/servicioLugar';
+import { useLugarStore } from '../store/storeLugar';
+import type { Lugar } from '../services/servicioLugar';
 import { useNavigate } from 'react-router-dom';
 
 const containerStyle = {

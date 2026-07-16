@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faFloppyDisk, faUpload, faImage, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { fetchPlaceById, crearLugarApi, editarLugarApi } from '../../servicios/servicioLugar';
-import { subirFotoLugar } from '../../servicios/servicioFotos';
-import ComponenteMapaAdmin from '../../componentes/ComponenteMapaAdmin';
-import { useUiStore } from '../../estado/estadoUi';
+import { fetchPlaceById, crearLugarApi, editarLugarApi } from '../../services/servicioLugar';
+import { subirFotoLugar } from '../../services/servicioFotos';
+import ComponenteMapaAdmin from '../../components/ComponenteMapaAdmin';
+import { useUiStore } from '../../store/storeUi';
 
 interface FormularioLugarProps {
   lugarId: number | null;

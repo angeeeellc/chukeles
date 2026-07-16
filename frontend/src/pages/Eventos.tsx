@@ -6,17 +6,14 @@ import {
   faSpinner, faRotateRight, faAlignLeft, faFont, faCheckCircle, faDog,
   faSearch, faChevronLeft, faChevronRight, faFilter
 } from '@fortawesome/free-solid-svg-icons';
-import { useUserStore } from '../estado/estadoUsuario';
-import { useUiStore } from '../estado/estadoUi';
+import { useUserStore } from '../store/storeUsuario';
+import { useUiStore } from '../store/storeUi';
 import {
   fetchEventos, crearEvento, actualizarEvento, unirseEvento, salirEvento, eliminarEvento,
   type Evento, type NuevoEvento
-} from '../servicios/servicioEvento';
-import Footer from '../componentes/Footer';
+} from '../services/servicioEvento';
+import Footer from '../components/Footer';
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
-
-// ── Utilidades ─────────────────────────────────────────────────────────────────
-
 const formatFecha = (fechaStr: string): string => {
   const fecha = new Date(fechaStr + 'T00:00:00');
   return fecha.toLocaleDateString('es-ES', {
@@ -31,9 +28,6 @@ const formatHora = (horaStr: string): string => {
 const esPasado = (fechaStr: string): boolean => {
   return new Date(fechaStr + 'T23:59:59') < new Date();
 };
-
-// ── Tarjeta de evento ──────────────────────────────────────────────────────────
-
 interface TarjetaEventoProps {
   evento: Evento;
   usuarioId?: number;
@@ -171,9 +165,6 @@ const TarjetaEvento = ({ evento, usuarioId, esAdmin, cargandoId, onUnirse, onSal
     </article>
   );
 };
-
-// ── Modal de crear evento ──────────────────────────────────────────────────────
-
 interface ModalCrearProps {
   eventoEditar?: Evento | null;
   onClose: () => void;
@@ -349,9 +340,6 @@ const ModalCrear = ({ eventoEditar, onClose, onCreado }: ModalCrearProps) => {
     </div>
   );
 };
-
-// ── Skeleton ───────────────────────────────────────────────────────────────────
-
 const SkeletonEvento = () => (
   <div className="bg-white rounded-2xl border border-gray-100 animate-pulse overflow-hidden">
     <div className="px-5 pt-5 pb-3 bg-green-50/50 border-b border-gray-100">
@@ -368,9 +356,6 @@ const SkeletonEvento = () => (
     </div>
   </div>
 );
-
-// ── Página principal ───────────────────────────────────────────────────────────
-
 const Eventos = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useUserStore();

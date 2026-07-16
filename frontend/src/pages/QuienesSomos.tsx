@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGraduationCap, faCode, faPaw } from '@fortawesome/free-solid-svg-icons';
-import Footer from '../componentes/Footer';
+import Footer from '../components/Footer';
 
 const perrosFamilia = [
   {

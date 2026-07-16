@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faCircleXmark, faInfoCircle, faXmark } from '@fortawesome/free-solid-svg-icons';
-import { useUiStore } from '../estado/estadoUi';
+import { useUiStore } from '../store/storeUi';
 
 const iconMap = {
   success: <FontAwesomeIcon icon={faCheckCircle} className="w-5 h-5 text-emerald-400 shrink-0" />,

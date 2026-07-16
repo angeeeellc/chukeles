@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faShieldHalved, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
-import { loginApi } from '../../servicios/servicioAutenticacion';
-import { useUserStore } from '../../estado/estadoUsuario';
-import { useUiStore } from '../../estado/estadoUi';
+import { loginApi } from '../../services/servicioAutenticacion';
+import { useUserStore } from '../../store/storeUsuario';
+import { useUiStore } from '../../store/storeUi';
 
 const IniciarSesionAdmin = () => {
   const navigate = useNavigate();

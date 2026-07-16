@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { fetchPlaceById, type Lugar } from '../servicios/servicioLugar';
+import { fetchPlaceById, type Lugar } from '../services/servicioLugar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocationDot, faPhone, faGlobe, faArrowLeft, faLocationArrow, faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faMugHot, faPaw } from '@fortawesome/free-solid-svg-icons';
 

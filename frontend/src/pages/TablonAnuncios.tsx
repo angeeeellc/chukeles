@@ -7,18 +7,15 @@ import {
   faSpinner, faRotateRight, faClipboardList, faGrip,
   faSearch, faChevronLeft, faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
-import { useUserStore } from '../estado/estadoUsuario';
-import { useUiStore } from '../estado/estadoUi';
+import { useUserStore } from '../store/storeUsuario';
+import { useUiStore } from '../store/storeUi';
 import {
   fetchPublicaciones, crearPublicacion, actualizarPublicacion, eliminarPublicacion,
   type PublicacionTablon, type TipoPublicacion, type NuevaPublicacion
-} from '../servicios/servicioTablon';
+} from '../services/servicioTablon';
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
-import clienteApi from '../servicios/clienteApi';
-import Footer from '../componentes/Footer';
-
-// ── Utilidades ─────────────────────────────────────────────────────────────────
-
+import clienteApi from '../services/clienteApi';
+import Footer from '../components/Footer';
 const tiempoRelativo = (fechaStr: string): string => {
   const ahora = new Date();
   const fecha = new Date(fechaStr);
@@ -49,9 +46,6 @@ const TIPO_CONFIG: Record<TipoPublicacion, { label: string; icon: React.ReactNod
     border: 'border-emerald-200',
   },
 };
-
-// ── Badge de tipo ──────────────────────────────────────────────────────────────
-
 const BadgeTipo = ({ tipo }: { tipo: TipoPublicacion }) => {
   const cfg = TIPO_CONFIG[tipo];
   return (
@@ -61,9 +55,6 @@ const BadgeTipo = ({ tipo }: { tipo: TipoPublicacion }) => {
     </span>
   );
 };
-
-// ── Tarjeta de anuncio ─────────────────────────────────────────────────────────
-
 interface TarjetaProps {
   pub: PublicacionTablon;
   usuarioId?: number;
@@ -150,9 +141,6 @@ const TarjetaAnuncio = ({ pub, usuarioId, esAdmin, onEliminar, onVerDetalle, onE
     </article>
   );
 };
-
-// ── Modal de nueva publicación ─────────────────────────────────────────────────
-
 interface ModalPublicarProps {
   publicacionEditar?: PublicacionTablon | null;
   onClose: () => void;
@@ -379,9 +367,6 @@ const ModalPublicar = ({ publicacionEditar, onClose, onPublicado }: ModalPublica
     </div>
   );
 };
-
-// ── Página principal ───────────────────────────────────────────────────────────
-
 const FILTROS: { label: React.ReactNode; valor: TipoPublicacion | null }[] = [
   { label: <><FontAwesomeIcon icon={faGrip} className="w-3.5 h-3.5 inline mr-1" /> Todos</>, valor: null },
   { label: <><FontAwesomeIcon icon={faCircleQuestion} className="w-3.5 h-3.5 inline mr-1" /> Dudas</>, valor: 'DUDA' },

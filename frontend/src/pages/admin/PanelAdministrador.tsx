@@ -7,22 +7,20 @@ import {
   faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faLocationArrow, faCircleQuestion, faInfoCircle, faUsers,
   faBan, faLockOpen, faUserShield
 } from '@fortawesome/free-solid-svg-icons';
-import { useUserStore } from '../../estado/estadoUsuario';
-import { useUiStore } from '../../estado/estadoUi';
+import { useUserStore } from '../../store/storeUsuario';
+import { useUiStore } from '../../store/storeUi';
 
 // Componentes internos
 import IniciarSesionAdmin from './IniciarSesionAdmin';
 import FormularioLugar from './FormularioLugar';
 
-import { fetchPlaces, eliminarLugarApi, type Lugar } from '../../servicios/servicioLugar';
+import { fetchPlaces, eliminarLugarApi, type Lugar } from '../../services/servicioLugar';
 import { 
   fetchPublicacionesAdmin, eliminarPublicacionAdmin, type PublicacionTablon,
   fetchAnunciosAdmin, eliminarAnuncioAdmin, type AnuncioMercado,
   fetchEventosAdmin, eliminarEventoAdmin, type Evento,
   fetchUsuariosAdmin, cambiarRolUsuarioAdmin, bloquearUsuarioAdmin, eliminarUsuarioAdmin, type UsuarioAdmin
-} from '../../servicios/servicioAdmin';
-
-// ── VISTA PRINCIPAL DEL DASHBOARD ─────────────────────────────────────────────
+} from '../../services/servicioAdmin';
 const DashboardAdmin = () => {
   const navigate = useNavigate();
   const { user, logout } = useUserStore();
@@ -661,8 +659,6 @@ const DashboardAdmin = () => {
     </div>
   );
 };
-
-// ── ENRUTADOR SEGURO DE ADMINISTRACIÓN ───────────────────────────────────────
 const PanelAdministrador = () => {
   const { isAuthenticated, user } = useUserStore();
 

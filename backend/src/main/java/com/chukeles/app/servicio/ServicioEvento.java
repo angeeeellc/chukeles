@@ -127,9 +127,6 @@ public class ServicioEvento {
         validarAutorOAdmin(evento, emailUsuario);
         repositorioEvento.deleteById(id);
     }
-
-    // ── helpers ────────────────────────────────────────────────────────────────
-
     private Evento buscarPorId(Long id) {
         return repositorioEvento.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Evento no encontrado con id: " + id));

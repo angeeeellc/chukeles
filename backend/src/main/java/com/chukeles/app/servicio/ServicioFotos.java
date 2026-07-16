@@ -74,9 +74,6 @@ public class ServicioFotos {
             // Ignorado: si no se puede borrar el fichero antiguo, no es crítico
         }
     }
-
-    // ── Validaciones ───────────────────────────────────────────────────────────
-
     private void validar(MultipartFile archivo) {
         if (archivo == null || archivo.isEmpty()) {
             throw new IllegalArgumentException("El archivo no puede estar vacío.");
