@@ -41,6 +41,10 @@ chukeles:
     expiracion-ms: 86400000  # 24 horas en milisegundos
   upload:
     ruta: ./uploads
+  cloudinary:
+    cloud-name: cnperczl
+    api-key: 916287336596523
+    api-secret: 5XVycH9RKwPICP-10tPQ8DwKa68
 
 ---
 spring:
@@ -70,3 +74,7 @@ chukeles:
     expiracion-ms: ${JWT_EXPIRACION_MS:86400000}
   upload:
     ruta: ${UPLOAD_RUTA:/app/uploads}
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:cnperczl}
+    api-key: ${CLOUDINARY_API_KEY:916287336596523}
+    api-secret: ${CLOUDINARY_API_SECRET:5XVycH9RKwPICP-10tPQ8DwKa68}

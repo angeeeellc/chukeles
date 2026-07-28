@@ -1,26 +1,23 @@
 package com.chukeles.app.servicio;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 /**
  * Servicio de subida de fotos.
  * <p>
  * Valida tipo MIME (jpg/png) y tamaño máximo (5 MB),
- * genera un nombre de fichero único y lo guarda en el
- * directorio configurado en {@code chukeles.upload.ruta}.
+ * y sube el archivo a Cloudinary para almacenamiento persistente.
  * </p>
- * Devuelve la URL relativa pública: {@code /uploads/{nombre}}.
+ * Devuelve la URL pública segura de Cloudinary (https://res.cloudinary.com/...).
  */
 @Service
 public class ServicioFotos {
@@ -28,52 +25,76 @@ public class ServicioFotos {
     private static final long TAMANO_MAXIMO_BYTES = 5L * 1024 * 1024; // 5 MB
     private static final List<String> TIPOS_PERMITIDOS = List.of("image/jpeg", "image/png");
 
-    @Value("${chukeles.upload.ruta:./uploads}")
-    private String rutaUpload;
+    @Value("${chukeles.cloudinary.cloud-name}")
+    private String cloudName;
+
+    @Value("${chukeles.cloudinary.api-key}")
+    private String apiKey;
+
+    @Value("${chukeles.cloudinary.api-secret}")
+    private String apiSecret;
+
+    private Cloudinary cloudinary;
+
+    @PostConstruct
+    public void init() {
+        cloudinary = new Cloudinary(ObjectUtils.asMap(
+            "cloud_name", cloudName,
+            "api_key",    apiKey,
+            "api_secret", apiSecret,
+            "secure",     true
+        ));
+    }
 
     /**
-     * Guarda el archivo en disco y devuelve la URL pública relativa.
+     * Sube el archivo a Cloudinary y devuelve la URL pública segura.
      *
      * @param archivo   Fichero multipart recibido en la petición HTTP
-     * @param entidad   Prefijo del nombre de fichero (ej: "lugar", "mercado")
-     * @param entidadId ID de la entidad a la que pertenece la foto
-     * @return URL pública relativa, ej: {@code /uploads/lugar_42_uuid.jpg}
+     * @param entidad   Carpeta de Cloudinary (ej: "lugar", "mercado")
+     * @param entidadId ID de la entidad para nombrar el archivo
+     * @return URL pública HTTPS de Cloudinary
      */
     public String guardar(MultipartFile archivo, String entidad, Long entidadId) {
         validar(archivo);
 
-        // Determinar extensión a partir del tipo MIME
-        String extension = archivo.getContentType().equals("image/png") ? "png" : "jpg";
-        String nombreFichero = entidad + "_" + entidadId + "_" + UUID.randomUUID() + "." + extension;
-
-        Path directorio = Paths.get(rutaUpload).toAbsolutePath().normalize();
         try {
-            Files.createDirectories(directorio);
-            Path destino = directorio.resolve(nombreFichero);
-            try (InputStream is = archivo.getInputStream()) {
-                Files.copy(is, destino, StandardCopyOption.REPLACE_EXISTING);
-            }
+            String publicId = "chukeles/" + entidad + "_" + entidadId + "_" + System.currentTimeMillis();
+            Map<?, ?> resultado = cloudinary.uploader().upload(
+                archivo.getBytes(),
+                ObjectUtils.asMap(
+                    "public_id", publicId,
+                    "overwrite", true,
+                    "resource_type", "image"
+                )
+            );
+            return (String) resultado.get("secure_url");
         } catch (IOException e) {
-            throw new RuntimeException("No se pudo guardar el fichero: " + e.getMessage(), e);
+            throw new RuntimeException("No se pudo subir la imagen a Cloudinary: " + e.getMessage(), e);
         }
-
-        return "/uploads/" + nombreFichero;
     }
 
     /**
-     * Elimina un fichero de uploads por su URL relativa.
+     * Elimina una imagen de Cloudinary por su URL pública.
      * No lanza excepción si el fichero no existe.
      */
     public void eliminar(String fotoUrl) {
-        if (fotoUrl == null || !fotoUrl.startsWith("/uploads/")) return;
-        String nombreFichero = fotoUrl.substring("/uploads/".length());
-        Path ruta = Paths.get(rutaUpload).toAbsolutePath().normalize().resolve(nombreFichero);
+        if (fotoUrl == null || !fotoUrl.contains("cloudinary.com")) return;
         try {
-            Files.deleteIfExists(ruta);
-        } catch (IOException ignored) {
-            // Ignorado: si no se puede borrar el fichero antiguo, no es crítico
+            // Extraer el public_id de la URL de Cloudinary
+            // Formato: https://res.cloudinary.com/{cloud}/image/upload/v{version}/{public_id}.{ext}
+            String[] partes = fotoUrl.split("/upload/");
+            if (partes.length < 2) return;
+            String conVersion = partes[1]; // ej: v1234567890/chukeles/lugar_1_abc.jpg
+            // Quitar la versión si existe
+            String publicIdConExt = conVersion.replaceFirst("^v\\d+/", "");
+            // Quitar la extensión
+            String publicId = publicIdConExt.replaceAll("\\.[^.]+$", "");
+            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+        } catch (Exception ignored) {
+            // Ignorado: si no se puede borrar la imagen antigua, no es crítico
         }
     }
+
     private void validar(MultipartFile archivo) {
         if (archivo == null || archivo.isEmpty()) {
             throw new IllegalArgumentException("El archivo no puede estar vacío.");
