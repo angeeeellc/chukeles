@@ -127,8 +127,9 @@ const FormularioSugerirLugar = ({ onClose, onSave }: FormularioSugerirLugarProps
 
       addToast('Lugar sugerido correctamente. Será revisado por un administrador.', 'success');
       onSave();
-    } catch (err) {
-      addToast('Error al sugerir el lugar. Revisa los datos.', 'error');
+    } catch (err: any) {
+      const msjError = err.response?.data?.mensaje || 'Error al sugerir el lugar. Revisa los datos.';
+      addToast(msjError, 'error');
     } finally {
       setCargando(false);
     }

@@ -189,8 +189,9 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
       }
 
       onSave();
-    } catch (err) {
-      addToast('Error al guardar el lugar. Revisa los datos.', 'error');
+    } catch (err: any) {
+      const msjError = err.response?.data?.mensaje || 'Error al guardar el lugar. Revisa los datos.';
+      addToast(msjError, 'error');
     } finally {
       setCargando(false);
     }
