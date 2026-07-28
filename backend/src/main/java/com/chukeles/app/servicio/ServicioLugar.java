@@ -112,6 +112,15 @@ public class ServicioLugar {
     }
 
     /**
+     * Aprueba un lugar pendiente de validación.
+     */
+    public Lugar aprobar(Long id) {
+        Lugar lugar = obtenerPorId(id);
+        lugar.setAprobado(true);
+        return repositorioLugar.save(lugar);
+    }
+
+    /**
      * Actualiza únicamente la URL de foto de un lugar.
      * Llamado por ControladorFotos tras guardar el fichero en disco.
      *

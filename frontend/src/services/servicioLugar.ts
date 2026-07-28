@@ -74,3 +74,8 @@ export const editarLugarApi = async (id: number, lugar: PeticionLugar): Promise<
 export const eliminarLugarApi = async (id: number): Promise<void> => {
   await clienteApi.delete(`/lugares/${id}`);
 };
+
+export const aprobarLugarApi = async (id: number): Promise<Lugar> => {
+  const response = await clienteApi.patch<Lugar>(`/lugares/${id}/aprobar`);
+  return response.data;
+};

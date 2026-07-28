@@ -5,7 +5,7 @@ import {
   faTrash, faEdit, faPlus, faMagnifyingGlass, faRightFromBracket, faLocationDot, 
   faFileLines, faShoppingBag, faCalendarAlt, faShieldHalved, faRotateRight,
   faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faLocationArrow, faCircleQuestion, faInfoCircle, faUsers,
-  faBan, faLockOpen, faUserShield
+  faBan, faLockOpen, faUserShield, faCheck, faXmark
 } from '@fortawesome/free-solid-svg-icons';
 import { useUserStore } from '../../store/storeUsuario';
 import { useUiStore } from '../../store/storeUi';
@@ -14,7 +14,7 @@ import { useUiStore } from '../../store/storeUi';
 import IniciarSesionAdmin from './IniciarSesionAdmin';
 import FormularioLugar from './FormularioLugar';
 
-import { fetchPlacesAdmin, eliminarLugarApi, type Lugar } from '../../services/servicioLugar';
+import { fetchPlacesAdmin, eliminarLugarApi, aprobarLugarApi, type Lugar } from '../../services/servicioLugar';
 import { 
   fetchPublicacionesAdmin, eliminarPublicacionAdmin, type PublicacionTablon,
   fetchAnunciosAdmin, eliminarAnuncioAdmin, type AnuncioMercado,
@@ -78,7 +78,17 @@ const DashboardAdmin = () => {
     navigate('/admin/login');
   };
 
-  // Acciones de eliminación
+  // Acciones de lugares
+  const handleAprobarLugar = async (id: number, nombre: string) => {
+    try {
+      await aprobarLugarApi(id);
+      addToast(`"${nombre}" aprobado y publicado en el mapa.`, 'success');
+      cargarDatos();
+    } catch (err) {
+      addToast('No se pudo aprobar el lugar.', 'error');
+    }
+  };
+
   const handleEliminarLugar = async (id: number, nombre: string) => {
     if (window.confirm(`¿Estás seguro de que deseas eliminar el lugar "${nombre}"?`)) {
       try {
@@ -371,6 +381,15 @@ const DashboardAdmin = () => {
                           </td>
                           <td className="px-6 py-3 text-right">
                             <div className="flex items-center justify-end gap-2">
+                              {(lugar as any).aprobado === false && (
+                                <button 
+                                  onClick={() => handleAprobarLugar(lugar.id, lugar.nombre)}
+                                  className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors"
+                                  title="Aprobar lugar"
+                                >
+                                  <FontAwesomeIcon icon={faCheck} className="w-4 h-4" />
+                                </button>
+                              )}
                               <button 
                                 onClick={() => { setLugarParaEditar(lugar.id); setModalAbierto(true); }}
                                 className="p-1.5 rounded-lg text-forest-green hover:bg-green-50 transition-colors"
@@ -378,13 +397,23 @@ const DashboardAdmin = () => {
                               >
                                 <FontAwesomeIcon icon={faEdit} className="w-4 h-4" />
                               </button>
-                              <button 
-                                onClick={() => handleEliminarLugar(lugar.id, lugar.nombre)}
-                                className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-                                title="Eliminar"
-                              >
-                                <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
-                              </button>
+                              {(lugar as any).aprobado === false ? (
+                                <button 
+                                  onClick={() => handleEliminarLugar(lugar.id, lugar.nombre)}
+                                  className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                                  title="Rechazar sugerencia"
+                                >
+                                  <FontAwesomeIcon icon={faXmark} className="w-4 h-4" />
+                                </button>
+                              ) : (
+                                <button 
+                                  onClick={() => handleEliminarLugar(lugar.id, lugar.nombre)}
+                                  className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                                  title="Eliminar lugar"
+                                >
+                                  <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>

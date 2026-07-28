@@ -72,6 +72,14 @@ public class ControladorLugar {
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
+    @Operation(summary = "Aprobar un lugar pendiente (admin)", security = @SecurityRequirement(name = "Bearer"))
+    @PreAuthorize("hasAuthority('ROL_ADMIN')")
+    @PatchMapping("/api/lugares/{id}/aprobar")
+    public ResponseEntity<Lugar> aprobar(@PathVariable Long id) {
+        Lugar aprobado = servicioLugar.aprobar(id);
+        return ResponseEntity.ok(aprobado);
+    }
+
     @Operation(summary = "Editar un lugar existente (admin)", security = @SecurityRequirement(name = "Bearer"))
     @PreAuthorize("hasAuthority('ROL_ADMIN')")
     @PutMapping("/api/lugares/{id}")
