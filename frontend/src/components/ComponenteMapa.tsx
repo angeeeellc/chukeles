@@ -1,17 +1,61 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from '@react-google-maps/api';
+import { useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import { useLugarStore } from '../store/storeLugar';
 import type { Lugar } from '../services/servicioLugar';
 import { useNavigate } from 'react-router-dom';
 
-const containerStyle = {
-  width: '100%',
-  height: '100%'
+// Fix default marker icons broken in React/Webpack builds
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+});
+
+// Colores personalizados por categoría
+const CATEGORY_COLORS: Record<string, string> = {
+  VETERINARIO:    '#ef4444',
+  PARQUE:         '#22c55e',
+  PELUQUERIA:     '#a855f7',
+  TIENDA:         '#f97316',
+  HOTEL:          '#3b82f6',
+  ADIESTRAMIENTO: '#eab308',
+  PET_FRIENDLY:   '#06b6d4',
+  OTRO:           '#6b7280',
 };
 
-const defaultCenter = {
-  lat: 43.3623,
-  lng: -8.4115
+const createColoredIcon = (categoria: string) => {
+  const color = CATEGORY_COLORS[categoria?.toUpperCase()] || '#6b7280';
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      width: 28px; height: 28px;
+      background: ${color};
+      border: 3px solid white;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    "></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+    popupAnchor: [0, -30],
+  });
+};
+
+// Componente auxiliar para hacer pan cuando cambia el lugar seleccionado
+const PanToSelected = ({ lugar }: { lugar: Lugar | null }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (lugar) {
+      map.setView([lugar.lat, lugar.lng], 16, { animate: true });
+    }
+  }, [lugar, map]);
+  return null;
 };
 
 interface MapComponentProps {
@@ -19,132 +63,108 @@ interface MapComponentProps {
 }
 
 const ComponenteMapa = ({ lugares }: MapComponentProps) => {
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY || '',
-  });
-
-  const mapRef = useRef<google.maps.Map | null>(null);
   const { lugarSeleccionado, setLugarSeleccionado } = useLugarStore();
   const navigate = useNavigate();
+  const markerRefs = useRef<Record<number, L.Marker>>({});
 
-  const onLoad = useCallback((map: google.maps.Map) => {
-    mapRef.current = map;
-  }, []);
-
-  const onUnmount = useCallback(() => {
-    mapRef.current = null;
-  }, []);
-
+  // Abrir popup del marcador seleccionado automáticamente
   useEffect(() => {
-    if (mapRef.current && lugarSeleccionado) {
-      mapRef.current.panTo({ lat: lugarSeleccionado.lat, lng: lugarSeleccionado.lng });
-      mapRef.current.setZoom(16);
+    if (lugarSeleccionado) {
+      const marker = markerRefs.current[lugarSeleccionado.id];
+      if (marker) {
+        marker.openPopup();
+      }
     }
   }, [lugarSeleccionado]);
 
   const traducirCategoria = (cat: string) => {
     const map: Record<string, string> = {
-      'VET': 'VETERINARIO', 'PARK': 'PARQUE', 'GROOMING': 'PELUQUERIA',
-      'STORE': 'TIENDA', 'HOTEL': 'HOTEL', 'TRAINING': 'ADIESTRAMIENTO', 'OTHER': 'OTRO'
+      VETERINARIO: 'Veterinario', PARQUE: 'Parque', PELUQUERIA: 'Peluquería',
+      TIENDA: 'Tienda', HOTEL: 'Hotel', ADIESTRAMIENTO: 'Adiestramiento',
+      PET_FRIENDLY: 'Pet Friendly', OTRO: 'Otro'
     };
-    return map[cat.toUpperCase()] || cat;
-  };
-
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center h-full w-full bg-gray-100">
-        <p className="text-gray-500 font-medium">Cargando mapa...</p>
-      </div>
-    );
-  }
-
-  // Intercept and suppress the Google Maps Marker deprecation warning
-  const originalConsoleError = console.error;
-  const originalConsoleWarn = console.warn;
-  
-  console.error = (...args: any[]) => {
-    if (typeof args[0] === 'string' && args[0].includes('google.maps.Marker is deprecated')) return;
-    originalConsoleError.apply(console, args);
-  };
-  
-  console.warn = (...args: any[]) => {
-    if (typeof args[0] === 'string' && args[0].includes('google.maps.Marker is deprecated')) return;
-    originalConsoleWarn.apply(console, args);
+    return map[cat?.toUpperCase()] || cat;
   };
 
   return (
-    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}>
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={defaultCenter}
-        zoom={14}
-        onLoad={onLoad}
-        onUnmount={onUnmount}
-        options={{
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
-        }}
-      >
-        {lugares.map((lugar) => (
-          <MarkerF
-            key={lugar.id}
-            position={{ lat: lugar.lat, lng: lugar.lng }}
-            onClick={() => setLugarSeleccionado(lugar)}
-          >
-            {lugarSeleccionado?.id === lugar.id && (
-              <InfoWindowF
-                position={{ lat: lugar.lat, lng: lugar.lng }}
-                onCloseClick={() => setLugarSeleccionado(null)}
+    <MapContainer
+      center={[43.3623, -8.4115]}
+      zoom={14}
+      style={{ width: '100%', height: '100%' }}
+      zoomControl={true}
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+
+      <PanToSelected lugar={lugarSeleccionado} />
+
+      {lugares.map((lugar) => (
+        <Marker
+          key={lugar.id}
+          position={[lugar.lat, lugar.lng]}
+          icon={createColoredIcon(lugar.categoria)}
+          ref={(ref) => {
+            if (ref) markerRefs.current[lugar.id] = ref;
+          }}
+          eventHandlers={{
+            click: () => setLugarSeleccionado(lugar),
+            popupclose: () => setLugarSeleccionado(null),
+          }}
+        >
+          <Popup minWidth={180} maxWidth={200}>
+            <div style={{ padding: '4px' }}>
+              <h4 style={{ fontWeight: 'bold', color: '#15803d', margin: '0 0 2px', fontSize: '13px' }}>
+                {lugar.nombre}
+              </h4>
+              <p style={{ fontSize: '10px', color: '#6b7280', margin: '0 0 6px' }}>
+                {traducirCategoria(lugar.categoria)}
+              </p>
+              {lugar.fotoUrl && (
+                <img
+                  src={lugar.fotoUrl}
+                  alt={lugar.nombre}
+                  style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '4px', marginBottom: '6px' }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=800';
+                    (e.target as HTMLImageElement).onerror = null;
+                  }}
+                />
+              )}
+              {lugar.descripcion && (
+                <p style={{ fontSize: '11px', color: '#4b5563', lineHeight: 1.4, marginBottom: '8px' }}>
+                  {lugar.descripcion.length > 60 ? lugar.descripcion.substring(0, 60) + '...' : lugar.descripcion}
+                </p>
+              )}
+              <button
+                onClick={() => navigate(`/place/${lugar.id}`)}
+                style={{
+                  width: '100%', padding: '6px', background: '#15803d', color: 'white',
+                  border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold',
+                  cursor: 'pointer', display: 'block', marginBottom: '4px'
+                }}
               >
-                <div style={{ padding: '4px', maxWidth: '180px' }}>
-                  <h4 style={{ fontWeight: 'bold', color: '#15803d', margin: 0, fontSize: '13px' }}>{lugar.nombre}</h4>
-                  <p style={{ fontSize: '10px', color: '#6b7280', margin: '4px 0' }}>{traducirCategoria(lugar.categoria)}</p>
-                  {lugar.fotoUrl && (
-                    <img 
-                      src={lugar.fotoUrl} 
-                      alt={lugar.nombre} 
-                      style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }} 
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=800';
-                        (e.target as HTMLImageElement).onerror = null;
-                      }}
-                    />
-                  )}
-                  <p style={{ fontSize: '11px', color: '#4b5563', lineHeight: 1.4, marginBottom: '8px' }}>
-                    {lugar.descripcion && lugar.descripcion.length > 60 
-                      ? lugar.descripcion.substring(0, 60) + '...' 
-                      : lugar.descripcion}
-                  </p>
-                  <button 
-                    onClick={() => navigate(`/place/${lugar.id}`)}
-                    style={{
-                      width: '100%', padding: '6px', background: '#15803d', color: 'white', border: 'none', 
-                      borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'block'
-                    }}
-                  >
-                    Ver detalle
-                  </button>
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${lugar.lat},${lugar.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'block', textAlign: 'center', width: '100%', padding: '6px', background: '#f3f4f6', 
-                      color: '#374151', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '11px', 
-                      fontWeight: 'bold', cursor: 'pointer', marginTop: '4px', textDecoration: 'none', boxSizing: 'border-box'
-                    }}
-                  >
-                    ¿Cómo llegar?
-                  </a>
-                </div>
-              </InfoWindowF>
-            )}
-          </MarkerF>
-        ))}
-      </GoogleMap>
-    </div>
+                Ver detalle
+              </button>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${lugar.lat},${lugar.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block', textAlign: 'center', width: '100%', padding: '6px',
+                  background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db',
+                  borderRadius: '4px', fontSize: '11px', fontWeight: 'bold',
+                  cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box'
+                }}
+              >
+                ¿Cómo llegar?
+              </a>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+    </MapContainer>
   );
 };
 

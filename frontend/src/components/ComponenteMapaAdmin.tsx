@@ -1,17 +1,19 @@
-import { useCallback, useRef, useState, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
+import { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
 
-const containerStyle = {
-  width: '100%',
-  height: '300px',
-  borderRadius: '12px',
-  border: '1px solid #e5e7eb'
-};
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-const defaultCenter = {
-  lat: 43.3623,
-  lng: -8.4115
-};
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+});
+
+const defaultCenter: [number, number] = [43.3623, -8.4115];
 
 interface MapComponentAdminProps {
   lat: number | null;
@@ -19,103 +21,84 @@ interface MapComponentAdminProps {
   onSelectCoordinates: (lat: number, lng: number) => void;
 }
 
-const ComponenteMapaAdmin = ({ lat, lng, onSelectCoordinates }: MapComponentAdminProps) => {
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script-admin',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY || '',
+// Componente interno que maneja los clics y sincroniza la vista
+const ClickHandler = ({
+  onSelectCoordinates,
+  setMarkerPos,
+}: {
+  onSelectCoordinates: (lat: number, lng: number) => void;
+  setMarkerPos: (pos: [number, number]) => void;
+}) => {
+  useMapEvents({
+    click(e) {
+      const { lat, lng } = e.latlng;
+      setMarkerPos([lat, lng]);
+      onSelectCoordinates(lat, lng);
+    },
   });
+  return null;
+};
 
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const [markerPos, setMarkerPos] = useState<google.maps.LatLngLiteral | null>(null);
-
-  // Sincronizar el marcador cuando cambian los props externos (ej: al cargar datos para editar)
+// Mueve el mapa cuando cambian los props externos (ej: al cargar datos de edición)
+const SyncView = ({ lat, lng }: { lat: number | null; lng: number | null }) => {
+  const map = useMap();
   useEffect(() => {
     if (lat !== null && lng !== null) {
-      setMarkerPos({ lat, lng });
-      if (mapRef.current) {
-        mapRef.current.panTo({ lat, lng });
-      }
+      map.setView([lat, lng], map.getZoom(), { animate: true });
     }
-  }, [lat, lng]);
+  }, [lat, lng, map]);
+  return null;
+};
 
-  const onLoad = useCallback((map: google.maps.Map) => {
-    mapRef.current = map;
+const ComponenteMapaAdmin = ({ lat, lng, onSelectCoordinates }: MapComponentAdminProps) => {
+  const [markerPos, setMarkerPos] = useState<[number, number] | null>(
+    lat !== null && lng !== null ? [lat, lng] : null
+  );
+
+  // Sincronizar marcador si los props externos cambian (modo edición)
+  useEffect(() => {
     if (lat !== null && lng !== null) {
-      map.panTo({ lat, lng });
+      setMarkerPos([lat, lng]);
     }
   }, [lat, lng]);
 
-  const onUnmount = useCallback(() => {
-    mapRef.current = null;
-  }, []);
-
-  const handleMapClick = (e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      const clickedLat = e.latLng.lat();
-      const clickedLng = e.latLng.lng();
-      setMarkerPos({ lat: clickedLat, lng: clickedLng });
-      onSelectCoordinates(clickedLat, clickedLng);
-    }
-  };
-
-  const handleMarkerDragEnd = (e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      const draggedLat = e.latLng.lat();
-      const draggedLng = e.latLng.lng();
-      setMarkerPos({ lat: draggedLat, lng: draggedLng });
-      onSelectCoordinates(draggedLat, draggedLng);
-    }
-  };
-
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center h-[300px] w-full bg-gray-100 rounded-xl border border-gray-200">
-        <p className="text-gray-500 font-medium text-sm animate-pulse">Cargando mapa interactivo...</p>
-      </div>
-    );
-  }
-
-  // Intercept and suppress the Google Maps Marker deprecation warning
-  const originalConsoleError = console.error;
-  const originalConsoleWarn = console.warn;
-  
-  console.error = (...args: any[]) => {
-    if (typeof args[0] === 'string' && args[0].includes('google.maps.Marker is deprecated')) return;
-    originalConsoleError.apply(console, args);
-  };
-  
-  console.warn = (...args: any[]) => {
-    if (typeof args[0] === 'string' && args[0].includes('google.maps.Marker is deprecated')) return;
-    originalConsoleWarn.apply(console, args);
-  };
-
-  const center = markerPos || defaultCenter;
+  const center: [number, number] =
+    lat !== null && lng !== null ? [lat, lng] : defaultCenter;
 
   return (
     <div className="relative w-full">
-      <GoogleMap
-        mapContainerStyle={containerStyle}
+      <MapContainer
         center={center}
         zoom={14}
-        onLoad={onLoad}
-        onUnmount={onUnmount}
-        onClick={handleMapClick}
-        options={{
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
-        }}
+        style={{ width: '100%', height: '300px', borderRadius: '12px', border: '1px solid #e5e7eb' }}
       >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+
+        <SyncView lat={lat} lng={lng} />
+
+        <ClickHandler
+          onSelectCoordinates={onSelectCoordinates}
+          setMarkerPos={setMarkerPos}
+        />
+
         {markerPos && (
-          <MarkerF
+          <Marker
             position={markerPos}
             draggable={true}
-            onDragEnd={handleMarkerDragEnd}
-            animation={window.google?.maps?.Animation?.DROP}
+            eventHandlers={{
+              dragend(e) {
+                const { lat, lng } = e.target.getLatLng();
+                setMarkerPos([lat, lng]);
+                onSelectCoordinates(lat, lng);
+              },
+            }}
           />
         )}
-      </GoogleMap>
-      <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-md text-[10px] text-gray-600 font-semibold border border-gray-200 shadow-sm pointer-events-none select-none z-10">
+      </MapContainer>
+      <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-md text-[10px] text-gray-600 font-semibold border border-gray-200 shadow-sm pointer-events-none select-none z-[1000]">
         Pincha en el mapa o arrastra el pin
       </div>
     </div>
