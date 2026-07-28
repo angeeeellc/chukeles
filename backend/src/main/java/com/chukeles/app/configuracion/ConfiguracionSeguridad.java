@@ -51,6 +51,8 @@ public class ConfiguracionSeguridad {
                 )
             )
             .authorizeHttpRequests(auth -> auth
+                // CORS preflight: siempre permitido
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/lugares/admin").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/lugares/**").permitAll()
@@ -69,6 +71,7 @@ public class ConfiguracionSeguridad {
                 ).permitAll()
                 .requestMatchers("/api/admin/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.PUT,    "/api/lugares/**").hasAuthority("ROL_ADMIN")
+                .requestMatchers(HttpMethod.PATCH,  "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 // DELETE /api/mercado, DELETE /api/eventos, POST /api/eventos/{id}/unirse:
                 // el control de autor vs. admin se delega al servicio correspondiente
