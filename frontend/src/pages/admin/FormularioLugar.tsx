@@ -78,7 +78,7 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
     } else {
       // Valores por defecto para nueva creación
       setNombre('');
-      setCategoria('OTHER');
+      setCategoria('OTRO');
       setDireccion('');
       setLat(43.3623);
       setLng(-8.4115);

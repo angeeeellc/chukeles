@@ -52,6 +52,12 @@ public class ManejadorExcepcionesGlobal {
                 .body(new RespuestaError(403, "No tienes permisos para realizar esta acción"));
     }
 
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<RespuestaError> manejarViolacionDatos(org.springframework.dao.DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new RespuestaError(400, "Ya existe un registro con ese nombre o dato único."));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<RespuestaError> manejarGeneral(Exception ex) {
         ex.printStackTrace(); // Registrar el error en los logs del servidor
