@@ -198,7 +198,7 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
 
   if (cargandoDatos) {
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999]">
         <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-xl">
           <span className="w-10 h-10 border-4 border-forest-green/20 border-t-forest-green rounded-full animate-spin inline-block mb-4" />
           <p className="text-gray-600 font-semibold">Cargando datos del lugar...</p>
@@ -211,7 +211,7 @@ const FormularioLugar = ({ lugarId, onClose, onSave }: FormularioLugarProps) => 
   const imagenMostrada = previsualizacion || fotoUrlActual;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto">
       <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center shrink-0">
