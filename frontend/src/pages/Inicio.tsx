@@ -323,8 +323,8 @@ const Inicio = () => {
           )}
         </div>
 
-        {/* Mapa */}
-        <div className="flex-1 h-full relative overflow-hidden bg-gray-100">
+        {/* Mapa — isolation:isolate crea un nuevo stacking context que contiene los z-index de Leaflet */}
+        <div className="flex-1 h-full relative overflow-hidden bg-gray-100" style={{ isolation: 'isolate' }}>
           <ComponenteMapa lugares={lugaresMostrar} />
           {/* Botón flotante para móvil */}
           <button
