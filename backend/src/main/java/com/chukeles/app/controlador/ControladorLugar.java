@@ -22,7 +22,8 @@ import java.util.List;
  * GET    /api/lugares             → Listar con filtros opcionales (público)
  * GET    /api/lugares/{id}        → Detalle de un lugar (público)
  * GET    /api/categorias          → Listar categorías disponibles (público)
- * POST   /api/lugares             → Crear lugar (solo admin)
+ * GET    /api/lugares/admin       → Listar todos los lugares (solo admin)
+ * POST   /api/lugares             → Crear o sugerir lugar (autenticado)
  * PUT    /api/lugares/{id}        → Editar lugar (solo admin)
  * DELETE /api/lugares/{id}        → Eliminar lugar (solo admin)
  */
@@ -56,8 +57,15 @@ public class ControladorLugar {
     public ResponseEntity<Categoria[]> listarCategorias() {
         return ResponseEntity.ok(Categoria.values());
     }
-    @Operation(summary = "Crear un nuevo lugar (admin)", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Listar todos los lugares (admin)", security = @SecurityRequirement(name = "Bearer"))
     @PreAuthorize("hasAuthority('ROL_ADMIN')")
+    @GetMapping("/api/lugares/admin")
+    public ResponseEntity<List<Lugar>> listarTodosAdmin() {
+        return ResponseEntity.ok(servicioLugar.obtenerTodosAdmin());
+    }
+
+    @Operation(summary = "Crear o sugerir un nuevo lugar (autenticado)", security = @SecurityRequirement(name = "Bearer"))
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/api/lugares")
     public ResponseEntity<Lugar> crear(@Valid @RequestBody PeticionLugar peticion) {
         Lugar creado = servicioLugar.crear(peticion);

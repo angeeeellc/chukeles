@@ -6,6 +6,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMagnifyingGlass, faLocationDot, faXmark, faHospital, faTree, faScissors, faStore, faBuilding, faGraduationCap, faMugHot, faPaw } from '@fortawesome/free-solid-svg-icons'
 import { useDebounce } from '../hooks/useDebounce'
 import { useNavigate, Link } from 'react-router-dom'
+import { useUserStore } from '../store/storeUsuario'
+import FormularioSugerirLugar from '../components/FormularioSugerirLugar'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
 const CATEGORIAS = [
   { valor: 'VETERINARIO', etiqueta: 'Veterinarios',    icon: faHospital },
   { valor: 'PARQUE',      etiqueta: 'Parques',         icon: faTree },
@@ -42,6 +45,7 @@ const traducirCategoria = (cat: string) => {
 }
 const Inicio = () => {
   const navigate = useNavigate()
+  const { isAuthenticated } = useUserStore()
   const {
     lugares, cargando, filtros,
     cargarLugares, setFiltros, resetFiltros,
@@ -59,6 +63,7 @@ const Inicio = () => {
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false)
   // En móvil: al pulsar un marcador del mapa, mostrar solo ese lugar en la lista
   const [mostrarSoloSeleccionado, setMostrarSoloSeleccionado] = useState(false)
+  const [modalSugerirAbierto, setModalSugerirAbierto] = useState(false)
 
 
   const listRef = useRef<HTMLDivElement>(null)
@@ -152,6 +157,16 @@ const Inicio = () => {
               </button>
             )}
           </div>
+          <button
+            onClick={() => {
+              if (!isAuthenticated) { navigate('/iniciar-sesion'); return; }
+              setModalSugerirAbierto(true);
+            }}
+            className="shrink-0 flex items-center gap-2 bg-forest-green text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-green-700 active:scale-95 transition-all shadow-sm"
+          >
+            <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
+            <span className="hidden sm:inline">Sugerir Lugar</span>
+          </button>
         </div>
 
         {/* Chips de categoría (horizontal scroll) */}
@@ -332,6 +347,13 @@ const Inicio = () => {
           </div>
         </div>
       </div>
+
+      {modalSugerirAbierto && (
+        <FormularioSugerirLugar
+          onClose={() => setModalSugerirAbierto(false)}
+          onSave={() => setModalSugerirAbierto(false)}
+        />
+      )}
     </div>
   )
 }

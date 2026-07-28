@@ -6,7 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface RepositorioLugar extends JpaRepository<Lugar, Long> {
-    List<Lugar> findByCategoria(Categoria categoria);
-    List<Lugar> findByNombreContainingIgnoreCase(String nombre);
-    List<Lugar> findByCategoriaAndNombreContainingIgnoreCase(Categoria categoria, String nombre);
+    List<Lugar> findByAprobadoTrue();
+    List<Lugar> findByCategoriaAndAprobadoTrue(Categoria categoria);
+    List<Lugar> findByNombreContainingIgnoreCaseAndAprobadoTrue(String nombre);
+    List<Lugar> findByCategoriaAndNombreContainingIgnoreCaseAndAprobadoTrue(Categoria categoria, String nombre);
 }

@@ -26,6 +26,11 @@ export const fetchPlaces = async (): Promise<Lugar[]> => {
   return response.data;
 };
 
+export const fetchPlacesAdmin = async (): Promise<Lugar[]> => {
+  const response = await clienteApi.get<Lugar[]>('/lugares/admin');
+  return response.data;
+};
+
 export const buscarLugares = async (filtros: FiltrosLugar): Promise<Lugar[]> => {
   const params: Record<string, string | number> = {};
   if (filtros.nombre)    params.nombre    = filtros.nombre;

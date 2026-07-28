@@ -14,7 +14,7 @@ import { useUiStore } from '../../store/storeUi';
 import IniciarSesionAdmin from './IniciarSesionAdmin';
 import FormularioLugar from './FormularioLugar';
 
-import { fetchPlaces, eliminarLugarApi, type Lugar } from '../../services/servicioLugar';
+import { fetchPlacesAdmin, eliminarLugarApi, type Lugar } from '../../services/servicioLugar';
 import { 
   fetchPublicacionesAdmin, eliminarPublicacionAdmin, type PublicacionTablon,
   fetchAnunciosAdmin, eliminarAnuncioAdmin, type AnuncioMercado,
@@ -46,7 +46,7 @@ const DashboardAdmin = () => {
     setCargando(true);
     try {
       if (activeTab === 'lugares') {
-        const data = await fetchPlaces();
+        const data = await fetchPlacesAdmin();
         setLugares(data);
       } else if (activeTab === 'tablon') {
         const data = await fetchPublicacionesAdmin();

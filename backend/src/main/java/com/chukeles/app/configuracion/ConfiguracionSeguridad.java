@@ -52,6 +52,7 @@ public class ConfiguracionSeguridad {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/lugares/admin").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/lugares/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll()
@@ -67,7 +68,6 @@ public class ConfiguracionSeguridad {
                     "/h2-console/**"
                 ).permitAll()
                 .requestMatchers("/api/admin/**").hasAuthority("ROL_ADMIN")
-                .requestMatchers(HttpMethod.POST,   "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.PUT,    "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/lugares/**").hasAuthority("ROL_ADMIN")
                 // DELETE /api/mercado, DELETE /api/eventos, POST /api/eventos/{id}/unirse:

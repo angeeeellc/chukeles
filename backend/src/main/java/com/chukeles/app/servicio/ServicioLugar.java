@@ -6,6 +6,8 @@ import com.chukeles.app.modelo.Categoria;
 import com.chukeles.app.modelo.Lugar;
 import com.chukeles.app.repositorio.RepositorioLugar;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -39,13 +41,13 @@ public class ServicioLugar {
         boolean tieneCategoria = categoria != null;
 
         if (tieneNombre && tieneCategoria) {
-            resultados = repositorioLugar.findByCategoriaAndNombreContainingIgnoreCase(categoria, nombre);
+            resultados = repositorioLugar.findByCategoriaAndNombreContainingIgnoreCaseAndAprobadoTrue(categoria, nombre);
         } else if (tieneNombre) {
-            resultados = repositorioLugar.findByNombreContainingIgnoreCase(nombre);
+            resultados = repositorioLugar.findByNombreContainingIgnoreCaseAndAprobadoTrue(nombre);
         } else if (tieneCategoria) {
-            resultados = repositorioLugar.findByCategoria(categoria);
+            resultados = repositorioLugar.findByCategoriaAndAprobadoTrue(categoria);
         } else {
-            resultados = repositorioLugar.findAll();
+            resultados = repositorioLugar.findByAprobadoTrue();
         }
 
         // Filtro de distancia Haversine (si se proporcionan coordenadas y radio)
@@ -64,7 +66,14 @@ public class ServicioLugar {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Lugar no encontrado con id: " + id));
     }
 
+    public List<Lugar> obtenerTodosAdmin() {
+        return repositorioLugar.findAll();
+    }
+
     public Lugar crear(PeticionLugar peticion) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROL_ADMIN"));
+
         Lugar lugar = Lugar.builder()
                 .nombre(peticion.getNombre())
                 .categoria(peticion.getCategoria())
@@ -75,7 +84,7 @@ public class ServicioLugar {
                 .telefono(peticion.getTelefono())
                 .sitioWeb(peticion.getSitioWeb())
                 .fotoUrl(peticion.getFotoUrl())
-                .aprobado(peticion.getAprobado() != null ? peticion.getAprobado() : false)
+                .aprobado(isAdmin && peticion.getAprobado() != null ? peticion.getAprobado() : false)
                 .build();
         return repositorioLugar.save(lugar);
     }
