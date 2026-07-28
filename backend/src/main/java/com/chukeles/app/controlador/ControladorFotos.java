@@ -36,17 +36,16 @@ public class ControladorFotos {
 
     /**
      * Sube una foto y la asocia a un lugar existente.
-     * Solo accesible para administradores.
+     * Accesible por cualquier usuario autenticado (necesario para sugerir lugares).
      *
      * @param id      ID del lugar
      * @param archivo Fichero JPG o PNG, máximo 5 MB
      * @return JSON con la URL pública de la foto: { "fotoUrl": "/uploads/..." }
      */
     @Operation(
-        summary = "Subir foto de un lugar (admin)",
+        summary = "Subir foto de un lugar",
         security = @SecurityRequirement(name = "Bearer")
     )
-    @PreAuthorize("hasAuthority('ROL_ADMIN')")
     @PostMapping(
         value = "/lugares/{id}",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
