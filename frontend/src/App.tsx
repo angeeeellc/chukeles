@@ -42,7 +42,7 @@ const Navbar = () => {
     }`
 
   return (
-    <nav className="bg-forest-green h-16 flex items-center shadow-md z-50 w-full shrink-0 relative">
+    <nav className="bg-forest-green h-16 flex items-center shadow-md z-[9999] w-full shrink-0 relative">
       <div className="w-full px-4 md:px-8 flex justify-between items-center">
 
         {/* Logo */}
@@ -124,8 +124,8 @@ const Navbar = () => {
 
       {/* Menú móvil desplegable */}
       {menuMovil && (
-        <div className="absolute top-16 left-0 right-0 bg-forest-green border-t border-white/10
-                        shadow-xl z-40 p-4 flex flex-col gap-1 md:hidden">
+        <div className="absolute top-16 left-0 right-0 bg-forest-green/95 backdrop-blur-md border-t border-white/10
+                        shadow-2xl z-[600] p-4 flex flex-col gap-1 md:hidden transition-all animate-in fade-in slide-in-from-top-2">
           <NavLink to="/"       end className={navLinkMobilClass} onClick={() => setMenuMovil(false)}><FontAwesomeIcon icon={faMap} className="inline w-4 h-4 mr-2" />Mapa</NavLink>
           <NavLink to="/eventos"     className={navLinkMobilClass} onClick={() => setMenuMovil(false)}><FontAwesomeIcon icon={faDog} className="inline w-4 h-4 mr-2" />Eventos</NavLink>
           <NavLink to="/tablon"      className={navLinkMobilClass} onClick={() => setMenuMovil(false)}><FontAwesomeIcon icon={faClipboardList} className="inline w-4 h-4 mr-2" />Anuncios</NavLink>
@@ -166,7 +166,7 @@ const Navbar = () => {
 function App() {
   return (
     <Router>
-      <div className="h-[100dvh] w-screen bg-gray-50 flex flex-col overflow-hidden">
+      <div className="h-[100dvh] w-full bg-gray-50 flex flex-col overflow-hidden">
         <Navbar />
 
         {/* Contenido de rutas */}
